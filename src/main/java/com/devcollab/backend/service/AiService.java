@@ -29,25 +29,27 @@ public class AiService {
 	private final AiConversationRepository aiConversationRepository;
 	private final AiMessageRepository aiMessageRepository;
 	private final WorkspaceAccessService workspaceAccessService;
-	private final RestClient restClient;
+	private final RestClient.Builder restClientBuilder;
 	private final String geminiApiKey;
 	private final String geminiModel;
+	private final String geminiBaseUrl;
 
 	public AiService(
 		AiConversationRepository aiConversationRepository,
 		AiMessageRepository aiMessageRepository,
 		WorkspaceAccessService workspaceAccessService,
+		RestClient.Builder restClientBuilder,
 		@Value("${app.gemini.api-key:}") String geminiApiKey,
-		@Value("${app.gemini.model:gemini-2.0-flash}") String geminiModel
+		@Value("${app.gemini.model:gemini-2.0-flash}") String geminiModel,
+		@Value("${app.gemini.base-url:https://generativelanguage.googleapis.com}") String geminiBaseUrl
 	) {
 		this.aiConversationRepository = aiConversationRepository;
 		this.aiMessageRepository = aiMessageRepository;
 		this.workspaceAccessService = workspaceAccessService;
+		this.restClientBuilder = restClientBuilder;
 		this.geminiApiKey = geminiApiKey;
 		this.geminiModel = geminiModel;
-		this.restClient = RestClient.builder()
-			.baseUrl("https://generativelanguage.googleapis.com")
-			.build();
+		this.geminiBaseUrl = geminiBaseUrl;
 	}
 
 	@Transactional
@@ -132,7 +134,10 @@ public class AiService {
 		);
 
 		try {
-			GeminiGenerateContentResponse response = restClient.post()
+			GeminiGenerateContentResponse response = restClientBuilder
+				.baseUrl(geminiBaseUrl)
+				.build()
+				.post()
 				.uri("/v1beta/models/{model}:generateContent", geminiModel)
 				.header("x-goog-api-key", geminiApiKey)
 				.contentType(MediaType.APPLICATION_JSON)

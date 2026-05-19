@@ -12,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +35,11 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<Map<String, Object>> handleBadRequest(RuntimeException exception) {
 		HttpStatus status = exception instanceof BadCredentialsException ? HttpStatus.UNAUTHORIZED : HttpStatus.BAD_REQUEST;
 		return buildResponse(status, exception.getMessage(), null);
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<Map<String, Object>> handleNoResource(NoResourceFoundException exception) {
+		return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), null);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)

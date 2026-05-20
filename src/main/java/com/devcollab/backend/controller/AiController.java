@@ -59,4 +59,4 @@ public class AiController {
 	) {
 		return ResponseEntity.ok(aiService.getConversations(workspaceId));
 	}
-}
+} 

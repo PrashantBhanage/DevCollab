@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Logs
 logs
 *.log
@@ -23,7 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-=======
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar
@@ -55,6 +55,3 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
->>>>>>> a60595465ec684bd0254db5bcaad782de35c8384

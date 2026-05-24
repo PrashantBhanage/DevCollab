@@ -1,24 +1,24 @@
 package com.devcollab.backend.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.devcollab.backend.model.Message;
-
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatMessage {
-
-	private UUID channelId;
-	private Long senderId;
-	private String senderName;
+	private String id;
 	private String content;
+	private String channelId;
+	private String senderId;
+	private String senderName;
 	private Message.Type type;
 	private String language;
-	private LocalDateTime timestamp;
+	private LocalDateTime createdAt;
 }

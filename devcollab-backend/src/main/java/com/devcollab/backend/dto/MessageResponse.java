@@ -1,17 +1,16 @@
 package com.devcollab.backend.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.devcollab.backend.model.Message;
+import java.time.LocalDateTime;
 
 public record MessageResponse(
-	UUID id,
+	String id,
 	String content,
+	LocalDateTime createdAt,
+	String channelId,
+	String senderId,
+	String senderName,
 	Message.Type type,
-	String language,
-	UUID channelId,
-	Long senderId,
-	LocalDateTime createdAt
+	String language
 ) {
 }

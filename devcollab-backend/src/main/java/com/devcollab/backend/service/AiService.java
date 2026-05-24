@@ -2,7 +2,6 @@ package com.devcollab.backend.service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -57,36 +56,39 @@ public class AiService {
 		workspaceAccessService.requireWorkspaceMember(request.workspaceId());
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		AiConversation conversation = new AiConversation();
-		conversation.setWorkspaceId(request.workspaceId());
-		conversation.setUserId(currentUser.getId());
+		AiConversation conversation = AiConversation.builder()
+			.workspaceId(request.workspaceId())
+			.userId(currentUser.getId())
+			.build();
 
 		return toResponse(aiConversationRepository.save(conversation));
 	}
 
 	@Transactional
-	public AiMessageResponse sendMessage(UUID conversationId, SendAiMessageRequest request) {
+	public AiMessageResponse sendMessage(String conversationId, SendAiMessageRequest request) {
 		AiConversation conversation = getConversationForCurrentUser(conversationId);
 
-		AiMessage userMessage = new AiMessage();
-		userMessage.setConversationId(conversation.getId());
-		userMessage.setRole(AiMessage.Role.USER);
-		userMessage.setContent(request.content().trim());
+		AiMessage userMessage = AiMessage.builder()
+			.conversationId(conversation.getId())
+			.role(AiMessage.Role.USER)
+			.content(request.content().trim())
+			.build();
 		aiMessageRepository.save(userMessage);
 
 		List<AiMessage> history = aiMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId());
 		String aiResponseText = generateAiResponse(history);
 
-		AiMessage aiMessage = new AiMessage();
-		aiMessage.setConversationId(conversation.getId());
-		aiMessage.setRole(AiMessage.Role.AI);
-		aiMessage.setContent(aiResponseText);
+		AiMessage aiMessage = AiMessage.builder()
+			.conversationId(conversation.getId())
+			.role(AiMessage.Role.AI)
+			.content(aiResponseText)
+			.build();
 
 		return toMessageResponse(aiMessageRepository.save(aiMessage));
 	}
 
 	@Transactional(readOnly = true)
-	public List<AiMessageResponse> getMessages(UUID conversationId) {
+	public List<AiMessageResponse> getMessages(String conversationId) {
 		AiConversation conversation = getConversationForCurrentUser(conversationId);
 		return aiMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId())
 			.stream()
@@ -95,7 +97,7 @@ public class AiService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<AiConversationResponse> getConversations(Long workspaceId) {
+	public List<AiConversationResponse> getConversations(String workspaceId) {
 		User currentUser = workspaceAccessService.getCurrentUser();
 		if (workspaceId != null) {
 			workspaceAccessService.requireWorkspaceMember(workspaceId);
@@ -111,7 +113,7 @@ public class AiService {
 			.toList();
 	}
 
-	private AiConversation getConversationForCurrentUser(UUID conversationId) {
+	private AiConversation getConversationForCurrentUser(String conversationId) {
 		AiConversation conversation = aiConversationRepository.findById(conversationId)
 			.orElseThrow(() -> new ResourceNotFoundException("AI conversation not found"));
 		User currentUser = workspaceAccessService.getCurrentUser();

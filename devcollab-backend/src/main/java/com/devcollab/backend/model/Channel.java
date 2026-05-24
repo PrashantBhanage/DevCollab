@@ -1,41 +1,29 @@
 package com.devcollab.backend.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "channels")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Channel {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+    private String name;
 
-	@Column(nullable = false, length = 100)
-	private String name;
+    private String workspaceId;
 
-	@Column(name = "workspace_id", nullable = false)
-	private Long workspaceId;
+    private String createdBy;
 
-	@Column(name = "created_by", nullable = false)
-	private Long createdBy;
-
-	@CreationTimestamp
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

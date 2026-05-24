@@ -1,9 +1,9 @@
 package com.devcollab.backend.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record CreateAiConversationRequest(
-	@NotNull(message = "Workspace id is required")
-	Long workspaceId
+	@NotBlank(message = "Workspace ID is required")
+	String workspaceId
 ) {
 }

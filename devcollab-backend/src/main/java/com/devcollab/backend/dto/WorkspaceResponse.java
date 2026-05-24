@@ -3,11 +3,11 @@ package com.devcollab.backend.dto;
 import java.time.LocalDateTime;
 
 public record WorkspaceResponse(
-	Long id,
+	String id,
 	String name,
 	String description,
-	Long ownerId,
-	String role,
+	String inviteCode,
+	String ownerId,
 	LocalDateTime createdAt
 ) {
 }

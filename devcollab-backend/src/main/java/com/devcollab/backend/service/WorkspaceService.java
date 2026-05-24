@@ -20,9 +20,6 @@ import com.devcollab.backend.repository.WorkspaceRepository;
 @Service
 public class WorkspaceService {
 
-	private static final String OWNER_ROLE = "OWNER";
-	private static final String MEMBER_ROLE = "MEMBER";
-
 	private final WorkspaceRepository workspaceRepository;
 	private final WorkspaceMemberRepository workspaceMemberRepository;
 	private final WorkspaceAccessService workspaceAccessService;
@@ -41,26 +38,29 @@ public class WorkspaceService {
 	public WorkspaceResponse createWorkspace(CreateWorkspaceRequest request) {
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		Workspace workspace = new Workspace();
-		workspace.setName(request.name().trim());
-		workspace.setDescription(trimToNull(request.description()));
-		workspace.setOwner(currentUser);
+		Workspace workspace = Workspace.builder()
+			.name(request.name().trim())
+			.description(trimToNull(request.description()))
+			.ownerId(currentUser.getId())
+			.build();
 
-		return toResponse(workspaceRepository.save(workspace), OWNER_ROLE);
+		return toResponse(workspaceRepository.save(workspace), WorkspaceMember.Role.OWNER.name());
 	}
 
 	@Transactional(readOnly = true)
 	public List<WorkspaceResponse> getWorkspaces() {
 		User currentUser = workspaceAccessService.getCurrentUser();
-		Map<Long, WorkspaceResponse> workspaces = new LinkedHashMap<>();
+		Map<String, WorkspaceResponse> workspaces = new LinkedHashMap<>();
 
 		for (Workspace workspace : workspaceRepository.findByOwnerId(currentUser.getId())) {
-			workspaces.put(workspace.getId(), toResponse(workspace, OWNER_ROLE));
+			workspaces.put(workspace.getId(), toResponse(workspace, WorkspaceMember.Role.OWNER.name()));
 		}
 
 		for (WorkspaceMember member : workspaceMemberRepository.findByUserId(currentUser.getId())) {
-			Workspace workspace = member.getWorkspace();
-			workspaces.putIfAbsent(workspace.getId(), toResponse(workspace, member.getRole()));
+			Workspace workspace = workspaceRepository.findById(member.getWorkspaceId()).orElse(null);
+			if (workspace != null) {
+				workspaces.putIfAbsent(workspace.getId(), toResponse(workspace, member.getRole().name()));
+			}
 		}
 
 		return workspaces.values().stream()
@@ -69,14 +69,14 @@ public class WorkspaceService {
 	}
 
 	@Transactional(readOnly = true)
-	public WorkspaceResponse getWorkspaceById(Long workspaceId) {
+	public WorkspaceResponse getWorkspaceById(String workspaceId) {
 		Workspace workspace = workspaceAccessService.requireWorkspaceMember(workspaceId);
 		User currentUser = workspaceAccessService.getCurrentUser();
-		String role = workspace.getOwner().getId().equals(currentUser.getId())
-			? OWNER_ROLE
+		String role = workspace.getOwnerId().equals(currentUser.getId())
+			? WorkspaceMember.Role.OWNER.name()
 			: workspaceMemberRepository.findByWorkspaceIdAndUserId(workspaceId, currentUser.getId())
-				.map(WorkspaceMember::getRole)
-				.orElse(MEMBER_ROLE);
+				.map(m -> m.getRole().name())
+				.orElse(WorkspaceMember.Role.MEMBER.name());
 		return toResponse(workspace, role);
 	}
 
@@ -85,20 +85,21 @@ public class WorkspaceService {
 		Workspace workspace = workspaceAccessService.getWorkspace(request.workspaceId());
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		if (workspace.getOwner().getId().equals(currentUser.getId())) {
-			return toResponse(workspace, OWNER_ROLE);
+		if (workspace.getOwnerId().equals(currentUser.getId())) {
+			return toResponse(workspace, WorkspaceMember.Role.OWNER.name());
 		}
 
 		WorkspaceMember member = workspaceMemberRepository.findByWorkspaceIdAndUserId(workspace.getId(), currentUser.getId())
 			.orElseGet(() -> {
-				WorkspaceMember newMember = new WorkspaceMember();
-				newMember.setWorkspace(workspace);
-				newMember.setUser(currentUser);
-				newMember.setRole(MEMBER_ROLE);
+				WorkspaceMember newMember = WorkspaceMember.builder()
+					.workspaceId(workspace.getId())
+					.userId(currentUser.getId())
+					.role(WorkspaceMember.Role.MEMBER)
+					.build();
 				return workspaceMemberRepository.save(newMember);
 			});
 
-		return toResponse(workspace, member.getRole());
+		return toResponse(workspace, member.getRole().name());
 	}
 
 	private WorkspaceResponse toResponse(Workspace workspace, String role) {
@@ -106,7 +107,7 @@ public class WorkspaceService {
 			workspace.getId(),
 			workspace.getName(),
 			workspace.getDescription(),
-			workspace.getOwner().getId(),
+			workspace.getOwnerId(),
 			role,
 			workspace.getCreatedAt()
 		);

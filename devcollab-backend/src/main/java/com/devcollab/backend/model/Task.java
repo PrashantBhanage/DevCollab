@@ -1,61 +1,44 @@
 package com.devcollab.backend.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Task {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-	public enum Status {
-		TODO,
-		IN_PROGRESS,
-		DONE
-	}
+    private String title;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+    private String description;
 
-	@Column(name = "workspace_id", nullable = false)
-	private Long workspaceId;
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Status status = Status.TODO;
 
-	@Column(name = "assigned_to")
-	private Long assignedTo;
+    private String workspaceId;
 
-	@Column(name = "created_by", nullable = false)
-	private Long createdBy;
+    private String assignedTo;
 
-	@Column(nullable = false, length = 150)
-	private String title;
+    private String createdBy;
 
-	@Column(columnDefinition = "TEXT")
-	private String description;
+    private LocalDate dueDate;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 30)
-	private Status status = Status.TODO;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-	private LocalDateTime dueDate;
-
-	@CreationTimestamp
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    public enum Status {
+        TODO, IN_PROGRESS, DONE
+    }
 }

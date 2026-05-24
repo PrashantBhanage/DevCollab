@@ -28,7 +28,11 @@ public class GlobalExceptionHandler {
 		for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
 			errors.put(fieldError.getField(), fieldError.getDefaultMessage());
 		}
-		return buildResponse(HttpStatus.BAD_REQUEST, "Validation failed", errors);
+		String message = exception.getBindingResult().getFieldErrors().stream()
+			.map(FieldError::getDefaultMessage)
+			.findFirst()
+			.orElse("Validation failed");
+		return buildResponse(HttpStatus.BAD_REQUEST, message, errors);
 	}
 
 	@ExceptionHandler({ IllegalArgumentException.class, BadCredentialsException.class })

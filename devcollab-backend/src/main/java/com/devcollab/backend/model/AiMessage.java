@@ -1,49 +1,35 @@
 package com.devcollab.backend.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ai_messages")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class AiMessage {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-	public enum Role {
-		USER,
-		AI
-	}
+    private String conversationId;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
-	@Column(name = "conversation_id", nullable = false)
-	private UUID conversationId;
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
-	private Role role;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-	@Column(nullable = false, columnDefinition = "TEXT")
-	private String content;
-
-	@CreationTimestamp
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    public enum Role {
+        USER, AI
+    }
 }

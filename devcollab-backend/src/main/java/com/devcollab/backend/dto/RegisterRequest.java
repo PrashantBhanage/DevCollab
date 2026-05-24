@@ -1,27 +1,22 @@
 package com.devcollab.backend.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RegisterRequest {
+    @NotBlank
+    private String name;
 
-	@NotBlank
-	@Size(max = 100)
-	private String name;
+    @NotBlank
+    private String email;
 
-	@NotBlank
-	@Email
-	@Size(max = 150)
-	private String email;
-
-	@NotBlank
-	@Size(min = 6, max = 100)
-	private String password;
+    @NotBlank
+    private String password;
 }

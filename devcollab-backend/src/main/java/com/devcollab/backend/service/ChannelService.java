@@ -1,7 +1,6 @@
 package com.devcollab.backend.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,20 +31,21 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public ChannelResponse createChannel(Long workspaceId, CreateChannelRequest request) {
+	public ChannelResponse createChannel(String workspaceId, CreateChannelRequest request) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		Channel channel = new Channel();
-		channel.setName(request.name().trim());
-		channel.setWorkspaceId(workspaceId);
-		channel.setCreatedBy(currentUser.getId());
+		Channel channel = Channel.builder()
+			.name(request.name().trim())
+			.workspaceId(workspaceId)
+			.createdBy(currentUser.getId())
+			.build();
 
 		return toResponse(channelRepository.save(channel));
 	}
 
 	@Transactional(readOnly = true)
-	public List<ChannelResponse> getChannelsByWorkspace(Long workspaceId) {
+	public List<ChannelResponse> getChannelsByWorkspace(String workspaceId) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		return channelRepository.findByWorkspaceIdOrderByCreatedAtAsc(workspaceId)
 			.stream()
@@ -54,7 +54,7 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public void deleteChannel(UUID channelId) {
+	public void deleteChannel(String channelId) {
 		Channel channel = channelRepository.findById(channelId)
 			.orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 		workspaceAccessService.requireWorkspaceOwner(channel.getWorkspaceId());

@@ -1,7 +1,6 @@
 package com.devcollab.backend.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,25 +24,26 @@ public class TaskService {
 	}
 
 	@Transactional
-	public TaskResponse createTask(Long workspaceId, TaskRequest request) {
+	public TaskResponse createTask(String workspaceId, TaskRequest request) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		workspaceAccessService.ensureWorkspaceParticipant(workspaceId, request.assignedTo());
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		Task task = new Task();
-		task.setTitle(request.title().trim());
-		task.setDescription(trimToNull(request.description()));
-		task.setStatus(request.status() == null ? Task.Status.TODO : request.status());
-		task.setWorkspaceId(workspaceId);
-		task.setAssignedTo(request.assignedTo());
-		task.setCreatedBy(currentUser.getId());
-		task.setDueDate(request.dueDate());
+		Task task = Task.builder()
+			.title(request.title().trim())
+			.description(trimToNull(request.description()))
+			.status(request.status() == null ? Task.Status.TODO : request.status())
+			.workspaceId(workspaceId)
+			.assignedTo(request.assignedTo())
+			.createdBy(currentUser.getId())
+			.dueDate(request.dueDate())
+			.build();
 
 		return toResponse(taskRepository.save(task));
 	}
 
 	@Transactional(readOnly = true)
-	public List<TaskResponse> getTasksByWorkspace(Long workspaceId, Task.Status status) {
+	public List<TaskResponse> getTasksByWorkspace(String workspaceId, Task.Status status) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		List<Task> tasks = status == null
 			? taskRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId)
@@ -55,7 +55,7 @@ public class TaskService {
 	}
 
 	@Transactional
-	public TaskResponse updateTask(UUID taskId, TaskRequest request) {
+	public TaskResponse updateTask(String taskId, TaskRequest request) {
 		Task task = getTask(taskId);
 		workspaceAccessService.requireWorkspaceMember(task.getWorkspaceId());
 		workspaceAccessService.ensureWorkspaceParticipant(task.getWorkspaceId(), request.assignedTo());
@@ -72,13 +72,13 @@ public class TaskService {
 	}
 
 	@Transactional
-	public void deleteTask(UUID taskId) {
+	public void deleteTask(String taskId) {
 		Task task = getTask(taskId);
 		workspaceAccessService.requireWorkspaceOwner(task.getWorkspaceId());
 		taskRepository.delete(task);
 	}
 
-	private Task getTask(UUID taskId) {
+	private Task getTask(String taskId) {
 		return taskRepository.findById(taskId)
 			.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 	}

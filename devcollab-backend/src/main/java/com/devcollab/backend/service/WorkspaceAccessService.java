@@ -42,9 +42,9 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceMember(Long workspaceId) {
+	public Workspace requireWorkspaceMember(String workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
-		Long userId = getCurrentUser().getId();
+		String userId = getCurrentUser().getId();
 		if (belongsToWorkspace(workspace, userId)) {
 			return workspace;
 		}
@@ -52,17 +52,17 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceOwner(Long workspaceId) {
+	public Workspace requireWorkspaceOwner(String workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
-		Long userId = getCurrentUser().getId();
-		if (workspace.getOwner().getId().equals(userId)) {
+		String userId = getCurrentUser().getId();
+		if (workspace.getOwnerId().equals(userId)) {
 			return workspace;
 		}
 		throw new AccessDeniedException("Only the workspace owner can perform this action");
 	}
 
 	@Transactional(readOnly = true)
-	public void ensureWorkspaceParticipant(Long workspaceId, Long userId) {
+	public void ensureWorkspaceParticipant(String workspaceId, String userId) {
 		if (userId == null) {
 			return;
 		}
@@ -77,13 +77,13 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace getWorkspace(Long workspaceId) {
+	public Workspace getWorkspace(String workspaceId) {
 		return workspaceRepository.findById(workspaceId)
 			.orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 	}
 
-	private boolean belongsToWorkspace(Workspace workspace, Long userId) {
-		if (workspace.getOwner().getId().equals(userId)) {
+	private boolean belongsToWorkspace(Workspace workspace, String userId) {
+		if (workspace.getOwnerId().equals(userId)) {
 			return true;
 		}
 		return workspaceMemberRepository.findByWorkspaceIdAndUserId(workspace.getId(), userId).isPresent();

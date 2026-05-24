@@ -1,7 +1,5 @@
 package com.devcollab.backend.service;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -34,30 +32,31 @@ public class MessageService {
 	}
 
 	@Transactional
-	public MessageResponse saveMessage(UUID channelId, CreateMessageRequest request) {
+	public MessageResponse saveMessage(String channelId, CreateMessageRequest request) {
 		Channel channel = getChannel(channelId);
 		workspaceAccessService.requireWorkspaceMember(channel.getWorkspaceId());
 		User currentUser = workspaceAccessService.getCurrentUser();
 
-		Message message = new Message();
-		message.setChannelId(channelId);
-		message.setSenderId(currentUser.getId());
-		message.setContent(request.content().trim());
-		message.setType(request.type() == null ? Message.Type.TEXT : request.type());
-		message.setLanguage(trimToNull(request.language()));
+		Message message = Message.builder()
+			.channelId(channelId)
+			.senderId(currentUser.getId())
+			.content(request.content().trim())
+			.type(request.type() == null ? Message.Type.TEXT : request.type())
+			.language(trimToNull(request.language()))
+			.build();
 
 		return toResponse(messageRepository.save(message));
 	}
 
 	@Transactional(readOnly = true)
-	public Page<MessageResponse> getMessagesByChannel(UUID channelId, int page, int size) {
+	public Page<MessageResponse> getMessagesByChannel(String channelId, int page, int size) {
 		Channel channel = getChannel(channelId);
 		workspaceAccessService.requireWorkspaceMember(channel.getWorkspaceId());
 		return messageRepository.findByChannelIdOrderByCreatedAtAsc(channelId, PageRequest.of(page, size))
 			.map(this::toResponse);
 	}
 
-	private Channel getChannel(UUID channelId) {
+	private Channel getChannel(String channelId) {
 		return channelRepository.findById(channelId)
 			.orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 	}

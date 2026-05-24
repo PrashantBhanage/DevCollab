@@ -1,19 +1,19 @@
 package com.devcollab.backend.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.devcollab.backend.model.Task;
+import java.time.LocalDateTime;
 
 public record TaskResponse(
-	UUID id,
+	String id,
 	String title,
 	String description,
 	Task.Status status,
-	Long workspaceId,
-	Long assignedTo,
-	Long createdBy,
+	Task.Priority priority,
 	LocalDateTime dueDate,
-	LocalDateTime createdAt
+	String workspaceId,
+	String assignedTo,
+	String createdBy,
+	LocalDateTime createdAt,
+	LocalDateTime updatedAt
 ) {
 }

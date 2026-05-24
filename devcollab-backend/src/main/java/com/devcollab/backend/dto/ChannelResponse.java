@@ -1,13 +1,12 @@
 package com.devcollab.backend.dto;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record ChannelResponse(
-	UUID id,
+	String id,
 	String name,
-	Long workspaceId,
-	Long createdBy,
+	String workspaceId,
+	String createdBy,
 	LocalDateTime createdAt
 ) {
 }

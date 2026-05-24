@@ -1,55 +1,39 @@
 package com.devcollab.backend.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "messages")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Message {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
 
-	public enum Type {
-		TEXT,
-		CODE
-	}
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+    @Enumerated(EnumType.STRING)
+    private Type type;
 
-	@Column(name = "channel_id", nullable = false)
-	private UUID channelId;
+    private String language;
 
-	@Column(name = "sender_id", nullable = false)
-	private Long senderId;
+    private String channelId;
 
-	@Column(nullable = false, columnDefinition = "TEXT")
-	private String content;
+    private String senderId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
-	private Type type = Type.TEXT;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-	@Column(length = 50)
-	private String language;
-
-	@CreationTimestamp
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
+    public enum Type {
+        TEXT, CODE
+    }
 }

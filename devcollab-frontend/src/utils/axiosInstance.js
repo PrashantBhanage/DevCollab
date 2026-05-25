@@ -1,14 +1,14 @@
 import axios from 'axios';
 
-const axiosInstance = axios.create({
+const api = axios.create({
   baseURL: 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Auto-attach Bearer token to every request
-axiosInstance.interceptors.request.use(
+// Auto-attach Bearer token
+api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -20,7 +20,7 @@ axiosInstance.interceptors.request.use(
 );
 
 // Handle 401 errors - redirect to login
-axiosInstance.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
@@ -32,4 +32,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export default api;

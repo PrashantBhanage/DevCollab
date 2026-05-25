@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance';
+import axiosInstance from '../utils/axiosInstance';
 
 export const getMessages = async (channelId) => {
   const response = await axiosInstance.get(`/api/channels/${channelId}/messages`);

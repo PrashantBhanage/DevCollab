@@ -11,17 +11,22 @@ const useAuthStore = create(
 
       login: async (credentials) => {
         const response = await authApi.login(credentials);
-        const { token, ...user } = response.data; // Assuming token is returned in response.data
+        const { token, ...user } = response.data;
+        localStorage.setItem('token', response.data.token);
         set({ user, token, isAuthenticated: true });
         return response.data;
       },
 
       register: async (credentials) => {
         const response = await authApi.register(credentials);
+        const { token, ...user } = response.data;
+        localStorage.setItem('token', response.data.token);
+        set({ user, token, isAuthenticated: true });
         return response.data;
       },
 
       logout: () => {
+        localStorage.removeItem('token');
         set({ user: null, token: null, isAuthenticated: false });
       },
     }),

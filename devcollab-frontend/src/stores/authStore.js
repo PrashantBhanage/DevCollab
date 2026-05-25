@@ -17,10 +17,10 @@ const useAuthStore = create(
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
-          const response = await authApi.login(email, password);
-          const { token, ...user } = response;
+          const response = await authApi.loginUser({ email, password });
+          const { token, ...userData } = response.data;
           localStorage.setItem('token', token);
-          set({ token, user, loading: false });
+          set({ token, user: userData, loading: false });
           return true;
         } catch (error) {
           set({ error: error.response?.data?.message || 'Login failed', loading: false });
@@ -31,10 +31,10 @@ const useAuthStore = create(
       register: async (name, email, password) => {
         set({ loading: true, error: null });
         try {
-          const response = await authApi.register(name, email, password);
-          const { token, ...user } = response;
+          const response = await authApi.registerUser({ name, email, password });
+          const { token, ...userData } = response.data;
           localStorage.setItem('token', token);
-          set({ token, user, loading: false });
+          set({ token, user: userData, loading: false });
           return true;
         } catch (error) {
           set({ error: error.response?.data?.message || 'Registration failed', loading: false });
@@ -43,9 +43,9 @@ const useAuthStore = create(
       },
 
       logout: () => {
-        set({ user: null, token: null });
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        set({ user: null, token: null });
       },
 
       clearError: () => {

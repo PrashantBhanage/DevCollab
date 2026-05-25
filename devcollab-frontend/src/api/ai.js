@@ -1,4 +1,4 @@
-import axiosInstance from './axiosInstance';
+import axiosInstance from '../utils/axiosInstance';
 
 export const getConversations = async (workspaceId) => {
   const response = await axiosInstance.get(`/api/ai/conversations?workspaceId=${workspaceId}`);

@@ -1,7 +1,6 @@
 package com.devcollab.backend.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,36 +26,36 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/ai")
 public class AiController {
 
-	private final AiService aiService;
+        private final AiService aiService;
 
-	public AiController(AiService aiService) {
-		this.aiService = aiService;
-	}
+        public AiController(AiService aiService) {
+                this.aiService = aiService;
+        }
 
-	@PostMapping("/conversations")
-	public ResponseEntity<AiConversationResponse> createConversation(
-		@Valid @RequestBody CreateAiConversationRequest request
-	) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(aiService.createConversation(request));
-	}
+        @PostMapping("/conversations")
+        public ResponseEntity<AiConversationResponse> createConversation(
+                @Valid @RequestBody CreateAiConversationRequest request
+        ) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(aiService.createConversation(request));
+        }
 
-	@PostMapping("/conversations/{id}/messages")
-	public ResponseEntity<AiMessageResponse> sendMessage(
-		@PathVariable UUID id,
-		@Valid @RequestBody SendAiMessageRequest request
-	) {
-		return ResponseEntity.ok(aiService.sendMessage(id, request));
-	}
+        @PostMapping("/conversations/{id}/messages")
+        public ResponseEntity<AiMessageResponse> sendMessage(
+                @PathVariable Long id,
+                @Valid @RequestBody SendAiMessageRequest request
+        ) {
+                return ResponseEntity.ok(aiService.sendMessage(id, request));
+        }
 
-	@GetMapping("/conversations/{id}/messages")
-	public ResponseEntity<List<AiMessageResponse>> getMessages(@PathVariable UUID id) {
-		return ResponseEntity.ok(aiService.getMessages(id));
-	}
+        @GetMapping("/conversations/{id}/messages")
+        public ResponseEntity<List<AiMessageResponse>> getMessages(@PathVariable Long id) {
+                return ResponseEntity.ok(aiService.getMessages(id));
+        }
 
-	@GetMapping("/conversations")
-	public ResponseEntity<List<AiConversationResponse>> getConversations(
-		@RequestParam(required = false) Long workspaceId
-	) {
-		return ResponseEntity.ok(aiService.getConversations(workspaceId));
-	}
+        @GetMapping("/conversations")
+        public ResponseEntity<List<AiConversationResponse>> getConversations(
+                @RequestParam(required = false) Long workspaceId
+        ) {
+                return ResponseEntity.ok(aiService.getConversations(workspaceId));
+        }
 }

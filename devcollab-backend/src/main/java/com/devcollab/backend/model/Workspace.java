@@ -15,18 +15,20 @@ import java.time.LocalDateTime;
 @Builder
 public class Workspace {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
 
     private String description;
 
-    @Column(unique = true)
+    @Column(name = "invite_code", unique = true)
     private String inviteCode;
 
-    private String ownerId;
+    @Column(name = "owner_id")
+    private Long ownerId;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

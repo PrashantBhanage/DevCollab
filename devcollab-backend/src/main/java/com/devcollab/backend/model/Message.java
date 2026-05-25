@@ -15,8 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class Message {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(columnDefinition = "TEXT")
     private String content;
@@ -26,11 +26,14 @@ public class Message {
 
     private String language;
 
-    private String channelId;
+    @Column(name = "channel_id")
+    private Long channelId;
 
-    private String senderId;
+    @Column(name = "sender_id")
+    private Long senderId;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Type {

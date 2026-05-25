@@ -42,9 +42,9 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceMember(String workspaceId) {
+	public Workspace requireWorkspaceMember(Long workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
-		String userId = getCurrentUser().getId();
+		Long userId = getCurrentUser().getId();
 		if (belongsToWorkspace(workspace, userId)) {
 			return workspace;
 		}
@@ -52,9 +52,9 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceOwner(String workspaceId) {
+	public Workspace requireWorkspaceOwner(Long workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
-		String userId = getCurrentUser().getId();
+		Long userId = getCurrentUser().getId();
 		if (workspace.getOwnerId().equals(userId)) {
 			return workspace;
 		}
@@ -62,7 +62,7 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public void ensureWorkspaceParticipant(String workspaceId, String userId) {
+	public void ensureWorkspaceParticipant(Long workspaceId, Long userId) {
 		if (userId == null) {
 			return;
 		}
@@ -77,12 +77,12 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace getWorkspace(String workspaceId) {
+	public Workspace getWorkspace(Long workspaceId) {
 		return workspaceRepository.findById(workspaceId)
 			.orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 	}
 
-	private boolean belongsToWorkspace(Workspace workspace, String userId) {
+	private boolean belongsToWorkspace(Workspace workspace, Long userId) {
 		if (workspace.getOwnerId().equals(userId)) {
 			return true;
 		}

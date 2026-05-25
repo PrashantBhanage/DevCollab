@@ -1,7 +1,6 @@
 package com.devcollab.backend.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,39 +27,39 @@ import jakarta.validation.Valid;
 @RequestMapping("/api")
 public class TaskController {
 
-	private final TaskService taskService;
+        private final TaskService taskService;
 
-	public TaskController(TaskService taskService) {
-		this.taskService = taskService;
-	}
+        public TaskController(TaskService taskService) {
+                this.taskService = taskService;
+        }
 
-	@PostMapping("/workspaces/{id}/tasks")
-	public ResponseEntity<TaskResponse> createTask(
-		@PathVariable Long id,
-		@Valid @RequestBody TaskRequest request
-	) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(id, request));
-	}
+        @PostMapping("/workspaces/{id}/tasks")
+        public ResponseEntity<TaskResponse> createTask(
+                @PathVariable Long id,
+                @Valid @RequestBody TaskRequest request
+        ) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(id, request));
+        }
 
-	@GetMapping("/workspaces/{id}/tasks")
-	public ResponseEntity<List<TaskResponse>> getTasks(
-		@PathVariable Long id,
-		@RequestParam(required = false) Task.Status status
-	) {
-		return ResponseEntity.ok(taskService.getTasksByWorkspace(id, status));
-	}
+        @GetMapping("/workspaces/{id}/tasks")
+        public ResponseEntity<List<TaskResponse>> getTasks(
+                @PathVariable Long id,
+                @RequestParam(required = false) Task.Status status
+        ) {
+                return ResponseEntity.ok(taskService.getTasksByWorkspace(id, status));
+        }
 
-	@PutMapping("/tasks/{taskId}")
-	public ResponseEntity<TaskResponse> updateTask(
-		@PathVariable UUID taskId,
-		@Valid @RequestBody TaskRequest request
-	) {
-		return ResponseEntity.ok(taskService.updateTask(taskId, request));
-	}
+        @PutMapping("/tasks/{taskId}")
+        public ResponseEntity<TaskResponse> updateTask(
+                @PathVariable Long taskId,
+                @Valid @RequestBody TaskRequest request
+        ) {
+                return ResponseEntity.ok(taskService.updateTask(taskId, request));
+        }
 
-	@DeleteMapping("/tasks/{taskId}")
-	public ResponseEntity<Void> deleteTask(@PathVariable UUID taskId) {
-		taskService.deleteTask(taskId);
-		return ResponseEntity.noContent().build();
-	}
+        @DeleteMapping("/tasks/{taskId}")
+        public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
+                taskService.deleteTask(taskId);
+                return ResponseEntity.noContent().build();
+        }
 }

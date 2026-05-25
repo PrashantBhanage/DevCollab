@@ -17,52 +17,53 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Service
 public class AuthService {
 
-	private final UserRepository userRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtUtil jwtUtil;
-	private final AuthenticationManager authenticationManager;
+        private final UserRepository userRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final JwtUtil jwtUtil;
+        private final AuthenticationManager authenticationManager;
 
-	public AuthService(
-		UserRepository userRepository,
-		PasswordEncoder passwordEncoder,
-		JwtUtil jwtUtil,
-		AuthenticationManager authenticationManager
-	) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.jwtUtil = jwtUtil;
-		this.authenticationManager = authenticationManager;
-	}
+        public AuthService(
+                UserRepository userRepository,
+                PasswordEncoder passwordEncoder,
+                JwtUtil jwtUtil,
+                AuthenticationManager authenticationManager
+        ) {
+                this.userRepository = userRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.jwtUtil = jwtUtil;
+                this.authenticationManager = authenticationManager;
+        }
 
-	public AuthResponse register(RegisterRequest request) {
-		String email = request.getEmail().trim().toLowerCase();
-		if (userRepository.existsByEmail(email)) {
-			throw new IllegalArgumentException("Email is already registered");
-		}
+        public AuthResponse register(RegisterRequest request) {
+                String email = request.getEmail().trim().toLowerCase();
+                if (userRepository.existsByEmail(email)) {
+                        throw new IllegalArgumentException("Email is already registered");
+                }
 
-		User user = new User();
-		user.setName(request.getName().trim());
-		user.setEmail(email);
-		user.setPassword(passwordEncoder.encode(request.getPassword()));
+                User user = User.builder()
+                        .name(request.getUsername().trim())
+                        .email(email)
+                        .password(passwordEncoder.encode(request.getPassword()))
+                        .build();
 
-		User savedUser = userRepository.save(user);
-		String token = jwtUtil.generateToken(savedUser.getEmail());
-		return buildResponse(savedUser, token);
-	}
+                User savedUser = userRepository.save(user);
+                String token = jwtUtil.generateToken(savedUser.getEmail());
+                return buildResponse(savedUser, token);
+        }
 
-	public AuthResponse login(LoginRequest request) {
-		Authentication authentication = authenticationManager.authenticate(
-			new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword())
-		);
+        public AuthResponse login(LoginRequest request) {
+                Authentication authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword())
+                );
 
-		User user = userRepository.findByEmail(authentication.getName())
-			.orElseThrow(() -> new IllegalArgumentException("User not found"));
+                User user = userRepository.findByEmail(authentication.getName())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		String token = jwtUtil.generateToken(user.getEmail());
-		return buildResponse(user, token);
-	}
+                String token = jwtUtil.generateToken(user.getEmail());
+                return buildResponse(user, token);
+        }
 
-	private AuthResponse buildResponse(User user, String token) {
-		return new AuthResponse(token, "Bearer", user.getId(), user.getName(), user.getEmail());
-	}
+        private AuthResponse buildResponse(User user, String token) {
+                return new AuthResponse(token, "Bearer", user.getId(), user.getName(), user.getEmail());
+        }
 }

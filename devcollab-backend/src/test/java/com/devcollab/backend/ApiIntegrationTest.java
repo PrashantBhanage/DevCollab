@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.UUID;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -124,7 +123,7 @@ class ApiIntegrationTest {
 			.andExpect(status().isCreated())
 			.andReturn();
 
-		readUuid(createChannelResult, "id");
+		readLong(createChannelResult, "id");
 
 		mockMvc.perform(
 			get("/api/workspaces/{id}/channels", workspaceId)
@@ -145,7 +144,7 @@ class ApiIntegrationTest {
 			.andExpect(status().isCreated())
 			.andReturn();
 
-		UUID taskId = readUuid(createTaskResult, "id");
+		Long taskId = readLong(createTaskResult, "id");
 
 		mockMvc.perform(
 			get("/api/workspaces/{id}/tasks", workspaceId)
@@ -160,7 +159,8 @@ class ApiIntegrationTest {
 				.content(objectMapper.writeValueAsString(Map.of(
 					"title", "Ship integration flow",
 					"description", "Task moved forward",
-					"status", "IN_PROGRESS"
+					"status", "IN_PROGRESS",
+					"workspaceId", workspaceId
 				)))
 		)
 			.andExpect(status().isOk());
@@ -174,7 +174,7 @@ class ApiIntegrationTest {
 			.andExpect(status().isCreated())
 			.andReturn();
 
-		UUID conversationId = readUuid(createConversationResult, "id");
+		Long conversationId = readLong(createConversationResult, "id");
 
 		mockMvc.perform(
 			post("/api/ai/conversations/{id}/messages", conversationId)
@@ -196,7 +196,7 @@ class ApiIntegrationTest {
 			post("/api/auth/register")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(Map.of(
-					"name", "Ava Patel",
+					"username", "Ava Patel",
 					"email", "ava.patel@example.com",
 					"password", "password123"
 				)))
@@ -227,16 +227,12 @@ class ApiIntegrationTest {
 		Workspace workspace = new Workspace();
 		workspace.setName("Shared Workspace");
 		workspace.setDescription("Workspace available for join testing");
-		workspace.setOwner(savedOwner);
+		workspace.setOwnerId(savedOwner.getId());
 		return workspaceRepository.save(workspace).getId();
 	}
 
 	private Long readLong(MvcResult result, String fieldName) throws Exception {
 		return readJson(result).get(fieldName).asLong();
-	}
-
-	private UUID readUuid(MvcResult result, String fieldName) throws Exception {
-		return UUID.fromString(readString(result, fieldName));
 	}
 
 	private String readString(MvcResult result, String fieldName) throws Exception {

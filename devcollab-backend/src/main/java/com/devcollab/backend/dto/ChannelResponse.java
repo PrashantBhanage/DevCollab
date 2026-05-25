@@ -3,10 +3,10 @@ package com.devcollab.backend.dto;
 import java.time.LocalDateTime;
 
 public record ChannelResponse(
-	String id,
+	Long id,
 	String name,
-	String workspaceId,
-	String createdBy,
+	Long workspaceId,
+	Long createdBy,
 	LocalDateTime createdAt
 ) {
 }

@@ -15,15 +15,18 @@ import java.time.LocalDateTime;
 @Builder
 public class Channel {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
 
-    private String workspaceId;
+    @Column(name = "workspace_id")
+    private Long workspaceId;
 
-    private String createdBy;
+    @Column(name = "created_by_id")
+    private Long createdBy;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

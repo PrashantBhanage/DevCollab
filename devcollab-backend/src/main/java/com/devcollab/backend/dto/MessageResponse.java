@@ -4,11 +4,11 @@ import com.devcollab.backend.model.Message;
 import java.time.LocalDateTime;
 
 public record MessageResponse(
-	String id,
+	Long id,
 	String content,
 	LocalDateTime createdAt,
-	String channelId,
-	String senderId,
+	Long channelId,
+	Long senderId,
 	String senderName,
 	Message.Type type,
 	String language

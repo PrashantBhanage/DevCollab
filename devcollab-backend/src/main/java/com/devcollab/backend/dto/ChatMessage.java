@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ChatMessage {
-	private String id;
+	private Long id;
 	private String content;
-	private String channelId;
-	private String senderId;
+	private Long channelId;
+	private Long senderId;
 	private String senderName;
 	private Message.Type type;
 	private String language;

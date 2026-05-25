@@ -15,13 +15,16 @@ import java.time.LocalDateTime;
 @Builder
 public class AiConversation {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String workspaceId;
+    @Column(name = "workspace_id")
+    private Long workspaceId;
 
-    private String userId;
+    @Column(name = "user_id")
+    private Long userId;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

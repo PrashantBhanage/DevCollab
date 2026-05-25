@@ -11,20 +11,20 @@ import com.devcollab.backend.repository.UserRepository;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-	private final UserRepository userRepository;
+        private final UserRepository userRepository;
 
-	public UserDetailsServiceImpl(UserRepository userRepository) {
-		this.userRepository = userRepository;
-	}
+        public UserDetailsServiceImpl(UserRepository userRepository) {
+                this.userRepository = userRepository;
+        }
 
-	@Override
-	public UserDetails loadUserByUsername(String username) {
-		com.devcollab.backend.model.User user = userRepository.findByEmail(username)
-			.orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        @Override
+        public UserDetails loadUserByUsername(String username) {
+                com.devcollab.backend.model.User user = userRepository.findByEmail(username)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-		return User.withUsername(user.getEmail())
-			.password(user.getPassword())
-			.authorities("ROLE_USER")
-			.build();
-	}
+                return User.withUsername(user.getEmail())
+                        .password(user.getPassword())
+                        .authorities("ROLE_USER")
+                        .build();
+        }
 }

@@ -15,21 +15,27 @@ import java.time.LocalDateTime;
 @Builder
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String name;
 
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String password;
+
+    @Column(name = "password_hash")
     private String passwordHash;
 
+    @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Transient
     @Builder.Default
     private boolean isOnline = false;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

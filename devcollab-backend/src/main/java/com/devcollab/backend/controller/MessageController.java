@@ -1,7 +1,5 @@
 package com.devcollab.backend.controller;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,26 +25,26 @@ import jakarta.validation.constraints.Min;
 @RequestMapping("/api")
 public class MessageController {
 
-	private final MessageService messageService;
+        private final MessageService messageService;
 
-	public MessageController(MessageService messageService) {
-		this.messageService = messageService;
-	}
+        public MessageController(MessageService messageService) {
+                this.messageService = messageService;
+        }
 
-	@PostMapping("/channels/{channelId}/messages")
-	public ResponseEntity<MessageResponse> saveMessage(
-		@PathVariable UUID channelId,
-		@Valid @RequestBody CreateMessageRequest request
-	) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(messageService.saveMessage(channelId, request));
-	}
+        @PostMapping("/channels/{channelId}/messages")
+        public ResponseEntity<MessageResponse> saveMessage(
+                @PathVariable Long channelId,
+                @Valid @RequestBody CreateMessageRequest request
+        ) {
+                return ResponseEntity.status(HttpStatus.CREATED).body(messageService.saveMessage(channelId, request));
+        }
 
-	@GetMapping("/channels/{channelId}/messages")
-	public ResponseEntity<Page<MessageResponse>> getMessages(
-		@PathVariable UUID channelId,
-		@RequestParam(defaultValue = "0") @Min(0) int page,
-		@RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
-	) {
-		return ResponseEntity.ok(messageService.getMessagesByChannel(channelId, page, size));
-	}
+        @GetMapping("/channels/{channelId}/messages")
+        public ResponseEntity<Page<MessageResponse>> getMessages(
+                @PathVariable Long channelId,
+                @RequestParam(defaultValue = "0") @Min(0) int page,
+                @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+        ) {
+                return ResponseEntity.ok(messageService.getMessagesByChannel(channelId, page, size));
+        }
 }

@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 @Builder
 public class Task {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     private String title;
 
@@ -27,18 +27,29 @@ public class Task {
     @Builder.Default
     private Status status = Status.TODO;
 
-    private String workspaceId;
+    @Column(name = "workspace_id")
+    private Long workspaceId;
 
-    private String assignedTo;
+    @Column(name = "assignee_id")
+    private Long assignedTo;
 
-    private String createdBy;
-
+    @Column(name = "due_date")
     private LocalDate dueDate;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Builder.Default
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     public enum Status {
         TODO, IN_PROGRESS, DONE
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

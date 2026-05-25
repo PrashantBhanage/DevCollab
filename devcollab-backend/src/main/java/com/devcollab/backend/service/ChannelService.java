@@ -31,7 +31,7 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public ChannelResponse createChannel(String workspaceId, CreateChannelRequest request) {
+	public ChannelResponse createChannel(Long workspaceId, CreateChannelRequest request) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		User currentUser = workspaceAccessService.getCurrentUser();
 
@@ -45,7 +45,7 @@ public class ChannelService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ChannelResponse> getChannelsByWorkspace(String workspaceId) {
+	public List<ChannelResponse> getChannelsByWorkspace(Long workspaceId) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		return channelRepository.findByWorkspaceIdOrderByCreatedAtAsc(workspaceId)
 			.stream()
@@ -54,7 +54,7 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public void deleteChannel(String channelId) {
+	public void deleteChannel(Long channelId) {
 		Channel channel = channelRepository.findById(channelId)
 			.orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 		workspaceAccessService.requireWorkspaceOwner(channel.getWorkspaceId());

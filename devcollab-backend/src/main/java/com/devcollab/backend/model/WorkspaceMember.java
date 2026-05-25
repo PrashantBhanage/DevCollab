@@ -15,17 +15,20 @@ import java.time.LocalDateTime;
 @Builder
 public class WorkspaceMember {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String workspaceId;
+    @Column(name = "workspace_id")
+    private Long workspaceId;
 
-    private String userId;
+    @Column(name = "user_id")
+    private Long userId;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Builder.Default
+    @Column(name = "joined_at")
     private LocalDateTime joinedAt = LocalDateTime.now();
 
     public enum Role {

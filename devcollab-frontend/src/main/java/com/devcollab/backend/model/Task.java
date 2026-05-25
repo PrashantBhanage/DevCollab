@@ -1,7 +1,6 @@
 package com.devcollab.backend.model;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -31,14 +30,14 @@ public class Task {
 	}
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
-	private UUID id;
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
 
 	@Column(name = "workspace_id", nullable = false)
 	private Long workspaceId;
 
-	@Column(name = "assigned_to")
-	private Long assignedTo;
+	@Column(name = "assignee_id")
+private Long assignedTo;
 
 	@Column(name = "created_by", nullable = false)
 	private Long createdBy;

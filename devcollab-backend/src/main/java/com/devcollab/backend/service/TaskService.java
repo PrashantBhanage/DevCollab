@@ -15,93 +15,91 @@ import com.devcollab.backend.repository.TaskRepository;
 @Service
 public class TaskService {
 
-	private final TaskRepository taskRepository;
-	private final WorkspaceAccessService workspaceAccessService;
+        private final TaskRepository taskRepository;
+        private final WorkspaceAccessService workspaceAccessService;
 
-	public TaskService(TaskRepository taskRepository, WorkspaceAccessService workspaceAccessService) {
-		this.taskRepository = taskRepository;
-		this.workspaceAccessService = workspaceAccessService;
-	}
+        public TaskService(TaskRepository taskRepository, WorkspaceAccessService workspaceAccessService) {
+                this.taskRepository = taskRepository;
+                this.workspaceAccessService = workspaceAccessService;
+        }
 
-	@Transactional
-	public TaskResponse createTask(String workspaceId, TaskRequest request) {
-		workspaceAccessService.requireWorkspaceMember(workspaceId);
-		workspaceAccessService.ensureWorkspaceParticipant(workspaceId, request.assignedTo());
-		User currentUser = workspaceAccessService.getCurrentUser();
+        @Transactional
+        public TaskResponse createTask(Long workspaceId, TaskRequest request) {
+                workspaceAccessService.requireWorkspaceMember(workspaceId);
+                workspaceAccessService.ensureWorkspaceParticipant(workspaceId, request.assignedTo());
 
-		Task task = Task.builder()
-			.title(request.title().trim())
-			.description(trimToNull(request.description()))
-			.status(request.status() == null ? Task.Status.TODO : request.status())
-			.workspaceId(workspaceId)
-			.assignedTo(request.assignedTo())
-			.createdBy(currentUser.getId())
-			.dueDate(request.dueDate())
-			.build();
+                Task task = Task.builder()
+                        .title(request.title().trim())
+                        .description(trimToNull(request.description()))
+                        .status(request.status() == null ? Task.Status.TODO : request.status())
+                        .workspaceId(workspaceId)
+                        .assignedTo(request.assignedTo())
+                        .dueDate(request.dueDate())
+                        .build();
 
-		return toResponse(taskRepository.save(task));
-	}
+                return toResponse(taskRepository.save(task));
+        }
 
-	@Transactional(readOnly = true)
-	public List<TaskResponse> getTasksByWorkspace(String workspaceId, Task.Status status) {
-		workspaceAccessService.requireWorkspaceMember(workspaceId);
-		List<Task> tasks = status == null
-			? taskRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId)
-			: taskRepository.findByWorkspaceIdAndStatusOrderByCreatedAtDesc(workspaceId, status);
+        @Transactional(readOnly = true)
+        public List<TaskResponse> getTasksByWorkspace(Long workspaceId, Task.Status status) {
+                workspaceAccessService.requireWorkspaceMember(workspaceId);
+                List<Task> tasks = status == null
+                        ? taskRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId)
+                        : taskRepository.findByWorkspaceIdAndStatusOrderByCreatedAtDesc(workspaceId, status);
 
-		return tasks.stream()
-			.map(this::toResponse)
-			.toList();
-	}
+                return tasks.stream()
+                        .map(this::toResponse)
+                        .toList();
+        }
 
-	@Transactional
-	public TaskResponse updateTask(String taskId, TaskRequest request) {
-		Task task = getTask(taskId);
-		workspaceAccessService.requireWorkspaceMember(task.getWorkspaceId());
-		workspaceAccessService.ensureWorkspaceParticipant(task.getWorkspaceId(), request.assignedTo());
+        @Transactional
+        public TaskResponse updateTask(Long taskId, TaskRequest request) {
+                Task task = getTask(taskId);
+                workspaceAccessService.requireWorkspaceMember(task.getWorkspaceId());
+                workspaceAccessService.ensureWorkspaceParticipant(task.getWorkspaceId(), request.assignedTo());
 
-		task.setTitle(request.title().trim());
-		task.setDescription(trimToNull(request.description()));
-		task.setAssignedTo(request.assignedTo());
-		task.setDueDate(request.dueDate());
-		if (request.status() != null) {
-			task.setStatus(request.status());
-		}
+                task.setTitle(request.title().trim());
+                task.setDescription(trimToNull(request.description()));
+                task.setAssignedTo(request.assignedTo());
+                task.setDueDate(request.dueDate());
+                if (request.status() != null) {
+                        task.setStatus(request.status());
+                }
 
-		return toResponse(taskRepository.save(task));
-	}
+                return toResponse(taskRepository.save(task));
+        }
 
-	@Transactional
-	public void deleteTask(String taskId) {
-		Task task = getTask(taskId);
-		workspaceAccessService.requireWorkspaceOwner(task.getWorkspaceId());
-		taskRepository.delete(task);
-	}
+        @Transactional
+        public void deleteTask(Long taskId) {
+                Task task = getTask(taskId);
+                workspaceAccessService.requireWorkspaceOwner(task.getWorkspaceId());
+                taskRepository.delete(task);
+        }
 
-	private Task getTask(String taskId) {
-		return taskRepository.findById(taskId)
-			.orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-	}
+        private Task getTask(Long taskId) {
+                return taskRepository.findById(taskId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        }
 
-	private TaskResponse toResponse(Task task) {
-		return new TaskResponse(
-			task.getId(),
-			task.getTitle(),
-			task.getDescription(),
-			task.getStatus(),
-			task.getWorkspaceId(),
-			task.getAssignedTo(),
-			task.getCreatedBy(),
-			task.getDueDate(),
-			task.getCreatedAt()
-		);
-	}
+        private TaskResponse toResponse(Task task) {
+                return new TaskResponse(
+                        task.getId(),
+                        task.getTitle(),
+                        task.getDescription(),
+                        task.getStatus(),
+                        task.getDueDate(),
+                        task.getWorkspaceId(),
+                        task.getAssignedTo(),
+                        task.getCreatedAt(),
+                        task.getUpdatedAt()
+                );
+        }
 
-	private String trimToNull(String value) {
-		if (value == null) {
-			return null;
-		}
-		String trimmed = value.trim();
-		return trimmed.isEmpty() ? null : trimmed;
-	}
+        private String trimToNull(String value) {
+                if (value == null) {
+                        return null;
+                }
+                String trimmed = value.trim();
+                return trimmed.isEmpty() ? null : trimmed;
+        }
 }

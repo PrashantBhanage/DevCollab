@@ -15,10 +15,11 @@ import java.time.LocalDateTime;
 @Builder
 public class AiMessage {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    private String conversationId;
+    @Column(name = "conversation_id")
+    private Long conversationId;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -27,6 +28,7 @@ public class AiMessage {
     private String content;
 
     @Builder.Default
+    @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public enum Role {

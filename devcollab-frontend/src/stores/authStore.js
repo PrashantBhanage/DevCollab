@@ -19,6 +19,7 @@ const useAuthStore = create(
         try {
           const response = await authApi.login(email, password);
           const { token, ...user } = response;
+          localStorage.setItem('token', token);
           set({ token, user, loading: false });
           return true;
         } catch (error) {
@@ -32,6 +33,7 @@ const useAuthStore = create(
         try {
           const response = await authApi.register(name, email, password);
           const { token, ...user } = response;
+          localStorage.setItem('token', token);
           set({ token, user, loading: false });
           return true;
         } catch (error) {

@@ -138,7 +138,8 @@ class ApiIntegrationTest {
 				.content(objectMapper.writeValueAsString(Map.of(
 					"title", "Ship integration flow",
 					"description", "Verify the full backend flow",
-					"status", "TODO"
+					"status", "TODO",
+					"workspaceId", workspaceId
 				)))
 		)
 			.andExpect(status().isCreated())
@@ -196,7 +197,7 @@ class ApiIntegrationTest {
 			post("/api/auth/register")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(Map.of(
-					"username", "Ava Patel",
+					"name", "Ava Patel",
 					"email", "ava.patel@example.com",
 					"password", "password123"
 				)))

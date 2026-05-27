@@ -14,6 +14,7 @@ const useAuthStore = create(
         set({ token, user });
       },
 
+    
       login: async (email, password) => {
         set({ loading: true, error: null });
         try {
@@ -28,6 +29,7 @@ const useAuthStore = create(
         }
       },
 
+      
       register: async (name, email, password) => {
         set({ loading: true, error: null });
         try {

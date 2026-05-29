@@ -6,6 +6,7 @@ public record AiConversationResponse(
 	Long id,
 	Long workspaceId,
 	Long userId,
+	String title,
 	LocalDateTime createdAt
 ) {
 }

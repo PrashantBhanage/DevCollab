@@ -24,6 +24,9 @@ public class AiConversation {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(name = "title", nullable = false)
+    private String title;
+
     @Builder.Default
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record CreateAiConversationRequest(
 	@NotNull(message = "Workspace ID is required")
-	Long workspaceId
+	Long workspaceId,
+	String title
 ) {
 }

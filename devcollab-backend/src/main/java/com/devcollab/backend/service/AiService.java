@@ -184,6 +184,7 @@ public class AiService {
                         conversation.getId(),
                         conversation.getWorkspaceId(),
                         conversation.getUserId(),
+                        conversation.getTitle(),
                         conversation.getCreatedAt()
                 );
         }
@@ -213,3 +214,6 @@ public class AiService {
         private record GeminiPart(String text) {
         }
 }
+ record GeminiPart(String text) {
+        }
+

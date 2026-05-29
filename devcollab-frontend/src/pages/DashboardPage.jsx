@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../stores/authStore';
 import useWorkspaceStore from '../stores/workspaceStore';
+import AiPromoCard from '../components/AiPromoCard';
 import toast from 'react-hot-toast';
 
 function DashboardPage() {
@@ -12,7 +13,7 @@ function DashboardPage() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');
   const [workspaceDescription, setWorkspaceDescription] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const [inviteCodeInput, setInviteCodeInput] = useState('');
 
   useEffect(() => {
     fetchWorkspaces();
@@ -37,16 +38,16 @@ function DashboardPage() {
 
   const handleJoinWorkspace = async (e) => {
     e.preventDefault();
-    if (!inviteCode.trim()) {
+    if (!inviteCodeInput.trim()) {
       toast.error('Please enter an invite code');
       return;
     }
 
-    const workspace = await joinWorkspace(inviteCode.trim());
+    const workspace = await joinWorkspace(inviteCodeInput.trim());
     if (workspace) {
       toast.success('Joined workspace!');
       setShowJoinModal(false);
-      setInviteCode('');
+      setInviteCodeInput('');
       navigate(`/workspace/${workspace.id}`);
     }
   };
@@ -56,87 +57,145 @@ function DashboardPage() {
     navigate('/');
   };
 
+  const copyInviteCode = (e, code) => {
+    e.stopPropagation();
+    if (!code) return;
+    navigator.clipboard.writeText(code);
+    toast.success('Invite code copied');
+  };
+
   const getInitials = (name) => {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const displayName = user?.username || user?.name || 'User';
+  const ownerCount = workspaces.filter((w) => w.role === 'OWNER').length;
+
+  const handleOpenAi = (workspaceId) => {
+    navigate(`/workspace/${workspaceId}?panel=ai`);
   };
 
   return (
     <div className="dashboard-layout">
       <header className="dashboard-header">
         <h1>DevCollab</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="member-avatar" style={{ background: '#534AB7', color: '#fff', width: '32px', height: '32px', fontSize: '12px' }}>
-              {getInitials(user?.name)}
+        <div className="dashboard-header-actions">
+          <div className="dashboard-user">
+            <div className="member-avatar dashboard-avatar">
+              {getInitials(displayName)}
             </div>
-            <span style={{ fontSize: '14px' }}>{user?.name}</span>
+            <span>{displayName}</span>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '8px 16px' }}>
+          <button type="button" onClick={handleLogout} className="btn btn-ghost">
             Sign out
           </button>
         </div>
       </header>
 
-      <main className="dashboard-content">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-          <h2 className="section-title" style={{ margin: 0 }}>Your Workspaces</h2>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => setShowJoinModal(true)} className="btn btn-secondary">
-              Join with code
-            </button>
-            <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
-              Create workspace
-            </button>
+      <div className="dashboard-body">
+        <aside className="dashboard-sidebar">
+          <div className="dashboard-stat-card">
+            <span className="dashboard-stat-label">Workspaces</span>
+            <span className="dashboard-stat-value">{workspaces.length}</span>
           </div>
-        </div>
+          <div className="dashboard-stat-card">
+            <span className="dashboard-stat-label">You own</span>
+            <span className="dashboard-stat-value">{ownerCount}</span>
+          </div>
+          <AiPromoCard workspaces={workspaces} onOpenAi={handleOpenAi} />
+          <div className="dashboard-tip">
+            <strong>Tip</strong>
+            <p>Share your invite code so teammates can join instantly.</p>
+          </div>
+        </aside>
 
-        {loading && workspaces.length === 0 ? (
-          <div className="empty-state">
-            <div className="loading-spinner" style={{ margin: '0 auto 16px' }} />
-            <p>Loading workspaces...</p>
-          </div>
-        ) : workspaces.length === 0 ? (
-          <div className="empty-state">
-            <h3>No workspaces yet</h3>
-            <p>Create a new workspace or join one with an invite code to get started.</p>
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>
-              <button onClick={() => setShowJoinModal(true)} className="btn btn-secondary">
-                Join with code
-              </button>
-              <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
+        <main className="dashboard-main">
+          <section className="dashboard-hero">
+            <h2>Build together</h2>
+            <p>Create a workspace, invite your team, and collaborate with channels and AI.</p>
+            <div className="dashboard-hero-actions">
+              <button type="button" onClick={() => setShowCreateModal(true)} className="btn btn-primary">
                 Create workspace
               </button>
+              <button type="button" onClick={() => setShowJoinModal(true)} className="btn btn-secondary">
+                Join with code
+              </button>
             </div>
-          </div>
-        ) : (
-          <div className="workspace-grid">
-            {workspaces.map((workspace) => (
-              <div
-                key={workspace.id}
-                className="workspace-card"
-                onClick={() => navigate(`/workspace/${workspace.id}`)}
-              >
-                <h3>{workspace.name}</h3>
-                <p>{workspace.description || 'No description'}</p>
-                <div className="member-count">
-                  {workspace.memberCount || 1} member{workspace.memberCount !== 1 ? 's' : ''}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+          </section>
 
-      {/* Create Modal */}
+          <div className="dashboard-section-header">
+            <h3 className="section-title">Your workspaces</h3>
+          </div>
+
+          {loading && workspaces.length === 0 ? (
+            <div className="empty-state">
+              <div className="loading-spinner" style={{ margin: '0 auto 16px' }} />
+              <p>Loading workspaces...</p>
+            </div>
+          ) : workspaces.length === 0 ? (
+            <div className="empty-state dashboard-empty">
+              <h3>No workspaces yet</h3>
+              <p>Create a new workspace or join one with an invite code to get started.</p>
+            </div>
+          ) : (
+            <div className="workspace-grid">
+              {workspaces.map((workspace) => (
+                <div
+                  key={workspace.id}
+                  className="workspace-card"
+                  onClick={() => navigate(`/workspace/${workspace.id}`)}
+                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/workspace/${workspace.id}`)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  <div className="workspace-card-top">
+                    <h3>{workspace.name}</h3>
+                    <span className={`workspace-card-role role-${(workspace.role || 'MEMBER').toLowerCase()}`}>
+                      {workspace.role || 'MEMBER'}
+                    </span>
+                  </div>
+                  <p>{workspace.description || 'No description'}</p>
+                  {workspace.inviteCode && (
+                    <button
+                      type="button"
+                      className="invite-code-chip"
+                      onClick={(e) => copyInviteCode(e, workspace.inviteCode)}
+                      title="Copy invite code"
+                    >
+                      <span className="invite-code-label">Invite</span>
+                      <code>{workspace.inviteCode}</code>
+                    </button>
+                  )}
+                  <div className="workspace-card-footer">
+                    <span>Click to open</span>
+                    <button
+                      type="button"
+                      className="btn btn-ghost workspace-ai-link"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenAi(workspace.id);
+                      }}
+                    >
+                      AI →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Create workspace</h2>
             <form onSubmit={handleCreateWorkspace}>
               <div className="form-group">
-                <label>Workspace name</label>
+                <label htmlFor="ws-name">Workspace name</label>
                 <input
+                  id="ws-name"
                   type="text"
                   className="form-input"
                   placeholder="My awesome project"
@@ -145,8 +204,9 @@ function DashboardPage() {
                 />
               </div>
               <div className="form-group">
-                <label>Description (optional)</label>
+                <label htmlFor="ws-desc">Description (optional)</label>
                 <input
+                  id="ws-desc"
                   type="text"
                   className="form-input"
                   placeholder="What is this workspace for?"
@@ -167,20 +227,20 @@ function DashboardPage() {
         </div>
       )}
 
-      {/* Join Modal */}
       {showJoinModal && (
         <div className="modal-overlay" onClick={() => setShowJoinModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h2>Join workspace</h2>
             <form onSubmit={handleJoinWorkspace}>
               <div className="form-group">
-                <label>Invite code</label>
+                <label htmlFor="invite-code">Invite code</label>
                 <input
+                  id="invite-code"
                   type="text"
                   className="form-input"
                   placeholder="Enter invite code"
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
+                  value={inviteCodeInput}
+                  onChange={(e) => setInviteCodeInput(e.target.value)}
                 />
               </div>
               <div className="modal-actions">

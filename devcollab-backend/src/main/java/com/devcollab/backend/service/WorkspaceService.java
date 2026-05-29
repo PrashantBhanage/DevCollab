@@ -4,16 +4,20 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devcollab.backend.dto.CreateWorkspaceRequest;
 import com.devcollab.backend.dto.JoinWorkspaceRequest;
+import com.devcollab.backend.dto.WorkspaceMemberResponse;
 import com.devcollab.backend.dto.WorkspaceResponse;
+import com.devcollab.backend.exception.ResourceNotFoundException;
 import com.devcollab.backend.model.User;
 import com.devcollab.backend.model.Workspace;
 import com.devcollab.backend.model.WorkspaceMember;
+import com.devcollab.backend.repository.UserRepository;
 import com.devcollab.backend.repository.WorkspaceMemberRepository;
 import com.devcollab.backend.repository.WorkspaceRepository;
 
@@ -23,15 +27,18 @@ public class WorkspaceService {
         private final WorkspaceRepository workspaceRepository;
         private final WorkspaceMemberRepository workspaceMemberRepository;
         private final WorkspaceAccessService workspaceAccessService;
+        private final UserRepository userRepository;
 
         public WorkspaceService(
                 WorkspaceRepository workspaceRepository,
                 WorkspaceMemberRepository workspaceMemberRepository,
-                WorkspaceAccessService workspaceAccessService
+                WorkspaceAccessService workspaceAccessService,
+                UserRepository userRepository
         ) {
                 this.workspaceRepository = workspaceRepository;
                 this.workspaceMemberRepository = workspaceMemberRepository;
                 this.workspaceAccessService = workspaceAccessService;
+                this.userRepository = userRepository;
         }
 
         @Transactional
@@ -41,6 +48,7 @@ public class WorkspaceService {
                 Workspace workspace = Workspace.builder()
                         .name(request.name().trim())
                         .description(trimToNull(request.description()))
+                        .inviteCode(generateInviteCode())
                         .ownerId(currentUser.getId())
                         .build();
 
@@ -80,9 +88,44 @@ public class WorkspaceService {
                 return toResponse(workspace, role);
         }
 
+        @Transactional(readOnly = true)
+        public List<WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId) {
+                Workspace workspace = workspaceAccessService.requireWorkspaceMember(workspaceId);
+                List<WorkspaceMemberResponse> members = new java.util.ArrayList<>();
+
+                userRepository.findById(workspace.getOwnerId()).ifPresent(owner ->
+                        members.add(new WorkspaceMemberResponse(
+                                owner.getId(),
+                                owner.getName(),
+                                owner.getEmail(),
+                                WorkspaceMember.Role.OWNER.name(),
+                                false
+                        ))
+                );
+
+                for (WorkspaceMember member : workspaceMemberRepository.findByWorkspaceId(workspaceId)) {
+                        if (member.getUserId().equals(workspace.getOwnerId())) {
+                                continue;
+                        }
+                        userRepository.findById(member.getUserId()).ifPresent(user ->
+                                members.add(new WorkspaceMemberResponse(
+                                        user.getId(),
+                                        user.getName(),
+                                        user.getEmail(),
+                                        member.getRole().name(),
+                                        false
+                                ))
+                        );
+                }
+
+                return members;
+        }
+
         @Transactional
         public WorkspaceResponse joinWorkspace(JoinWorkspaceRequest request) {
-                Workspace workspace = workspaceAccessService.getWorkspace(request.workspaceId());
+                String code = request.inviteCode().trim();
+                Workspace workspace = workspaceRepository.findByInviteCode(code)
+                        .orElseThrow(() -> new ResourceNotFoundException("Invalid invite code"));
                 User currentUser = workspaceAccessService.getCurrentUser();
 
                 if (workspace.getOwnerId().equals(currentUser.getId())) {
@@ -112,6 +155,10 @@ public class WorkspaceService {
                         role,
                         workspace.getCreatedAt()
                 );
+        }
+
+        private String generateInviteCode() {
+                return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         }
 
         private String trimToNull(String value) {

@@ -15,7 +15,7 @@ export const getMessages = async (conversationId) => {
   return response.data;
 };
 
-export const sendMessage = async (conversationId, message) => {
-  const response = await axiosInstance.post(`/api/ai/conversations/${conversationId}/messages`, { message });
+export const sendMessage = async (conversationId, content) => {
+  const response = await axiosInstance.post(`/api/ai/conversations/${conversationId}/messages`, { content });
   return response.data;
 };

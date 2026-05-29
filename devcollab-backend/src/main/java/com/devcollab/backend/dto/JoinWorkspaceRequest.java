@@ -1,8 +1,8 @@
 package com.devcollab.backend.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record JoinWorkspaceRequest(
-	@NotNull(message = "Workspace ID is required")
-	Long workspaceId) {
+	@NotBlank(message = "Invite code is required")
+	String inviteCode) {
 }

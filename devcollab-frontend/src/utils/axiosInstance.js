@@ -1,16 +1,16 @@
 import axios from 'axios';
+import { getAccessToken, clearAuthStorage } from './authToken';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_URL ?? '',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Auto-attach Bearer token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -19,16 +19,18 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 errors - redirect to login
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/';
+    const status = error.response?.status;
+    if (status === 401 || status === 403) {
+      clearAuthStorage();
+      if (!window.location.pathname.match(/^\/(register)?$/)) {
+        window.location.href = '/';
+      }
     }
-    return Promise.reject(error);
+    const message = error.response?.data?.message || error.message;
+    return Promise.reject(Object.assign(error, { message }));
   }
 );
 

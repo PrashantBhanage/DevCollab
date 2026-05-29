@@ -37,19 +37,39 @@ public class JwtFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		String token = authHeader.substring(7);
-		String username = jwtUtil.extractUsername(token);
+		String token = normalizeToken(authHeader.substring(7));
+		if (token == null || token.isBlank()) {
+			filterChain.doFilter(request, response);
+			return;
+		}
 
-		if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-			UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-			if (jwtUtil.validateToken(token, userDetails)) {
-				UsernamePasswordAuthenticationToken authentication =
-					new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-				authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-				SecurityContextHolder.getContext().setAuthentication(authentication);
+		try {
+			String username = jwtUtil.extractUsername(token);
+			if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+				UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+				if (jwtUtil.validateToken(token, userDetails)) {
+					UsernamePasswordAuthenticationToken authentication =
+						new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+					authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
 			}
+		}
+		catch (Exception ignored) {
+			// Invalid or expired token — continue without authentication
 		}
 
 		filterChain.doFilter(request, response);
+	}
+
+	private String normalizeToken(String raw) {
+		if (raw == null) {
+			return null;
+		}
+		String token = raw.trim();
+		while (token.regionMatches(true, 0, "Bearer ", 0, 7)) {
+			token = token.substring(7).trim();
+		}
+		return token;
 	}
 }

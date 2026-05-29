@@ -21,17 +21,20 @@ public class AuthService {
         private final PasswordEncoder passwordEncoder;
         private final JwtUtil jwtUtil;
         private final AuthenticationManager authenticationManager;
+        private final WorkspaceAccessService workspaceAccessService;
 
         public AuthService(
                 UserRepository userRepository,
                 PasswordEncoder passwordEncoder,
                 JwtUtil jwtUtil,
-                AuthenticationManager authenticationManager
+                AuthenticationManager authenticationManager,
+                WorkspaceAccessService workspaceAccessService
         ) {
                 this.userRepository = userRepository;
                 this.passwordEncoder = passwordEncoder;
                 this.jwtUtil = jwtUtil;
                 this.authenticationManager = authenticationManager;
+                this.workspaceAccessService = workspaceAccessService;
         }
 
         public AuthResponse register(RegisterRequest request) {
@@ -51,6 +54,11 @@ public class AuthService {
                 return buildResponse(savedUser, token);
         }
 
+        public AuthResponse getCurrentUser() {
+                User user = workspaceAccessService.getCurrentUser();
+                return buildResponse(user, null);
+        }
+
         public AuthResponse login(LoginRequest request) {
                 Authentication authentication = authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword())
@@ -64,6 +72,6 @@ public class AuthService {
         }
 
         private AuthResponse buildResponse(User user, String token) {
-                return new AuthResponse(token, "Bearer", user.getId(), user.getName(), user.getEmail());
+                return new AuthResponse(token, token != null ? "Bearer" : null, user.getId(), user.getName(), user.getEmail());
         }
 }

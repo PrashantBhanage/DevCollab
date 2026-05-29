@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import useAuthStore from '../stores/authStore';
@@ -10,49 +10,53 @@ import toast from 'react-hot-toast';
 function WorkspacePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const panelAi = searchParams.get('panel') === 'ai';
   const { user, logout } = useAuthStore();
-  const { 
-    currentWorkspace, 
-    channels, 
-    currentChannel, 
-    messages, 
-    members, 
-    loading, 
-    setCurrentWorkspace, 
+  const {
+    currentWorkspace,
+    channels,
+    currentChannel,
+    messages,
+    members,
+    setCurrentWorkspace,
     setCurrentChannel,
     sendMessage,
     addChannel,
-    clearMessages
   } = useWorkspaceStore();
-  
+
   const [messageText, setMessageText] = useState('');
   const [isCode, setIsCode] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showAddChannel, setShowAddChannel] = useState(false);
   const [newChannelName, setNewChannelName] = useState('');
+  const [aiPanelOpen, setAiPanelOpen] = useState(panelAi);
   const messagesEndRef = useRef(null);
-  
-  // AI Panel states
+  const aiPanelRef = useRef(null);
+
   const [aiConversations, setAiConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState(null);
   const [aiMessages, setAiMessages] = useState([]);
   const [aiInput, setAiInput] = useState('');
   const [sendingAi, setSendingAi] = useState(false);
 
+  const displayName = user?.username || user?.name || 'User';
+
   useEffect(() => {
     if (id) {
-      setCurrentWorkspace(parseInt(id));
+      setCurrentWorkspace(parseInt(id, 10));
     }
-  }, [id]);
+  }, [id, setCurrentWorkspace]);
 
   useEffect(() => {
-    if (currentChannel) {
-      loadMessages();
+    setAiPanelOpen(panelAi);
+    if (panelAi) {
+      aiPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  }, [currentChannel]);
+  }, [panelAi]);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
@@ -60,16 +64,6 @@ function WorkspacePage() {
       loadAiConversations();
     }
   }, [currentWorkspace]);
-
-  const loadMessages = async () => {
-    if (currentChannel) {
-      clearMessages();
-    }
-  };
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -89,7 +83,7 @@ function WorkspacePage() {
   const handleAddChannel = async (e) => {
     e.preventDefault();
     if (!newChannelName.trim()) return;
-    
+
     const channel = await addChannel(newChannelName);
     if (channel) {
       setNewChannelName('');
@@ -104,20 +98,30 @@ function WorkspacePage() {
 
   const getInitials = (name) => {
     if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // AI Functions
+  const normalizeAiRole = (role) => {
+    if (!role) return 'assistant';
+    const r = role.toUpperCase();
+    if (r === 'USER') return 'user';
+    if (r === 'AI') return 'ai';
+    return role.toLowerCase();
+  };
+
   const loadAiConversations = async () => {
+    if (!currentWorkspace?.id) return;
     try {
       const convs = await aiApi.getConversations(currentWorkspace.id);
       setAiConversations(convs);
+      if (panelAi && convs.length > 0 && !currentConversation) {
+        handleSelectConversation(convs[0].id);
+      }
     } catch (err) {
       console.error('Failed to load AI conversations:', err);
     }
@@ -127,20 +131,27 @@ function WorkspacePage() {
     try {
       const msgs = await aiApi.getMessages(convId);
       setCurrentConversation(convId);
-      setAiMessages(msgs);
+      setAiMessages(
+        msgs.map((m) => ({
+          role: normalizeAiRole(m.role),
+          content: m.content,
+        }))
+      );
     } catch (err) {
       console.error('Failed to load AI messages:', err);
     }
   };
 
   const handleNewConversation = async () => {
+    if (!currentWorkspace?.id) return;
     try {
       const conv = await aiApi.createConversation(currentWorkspace.id, 'New conversation');
       setAiConversations([...aiConversations, conv]);
       setCurrentConversation(conv.id);
       setAiMessages([]);
+      setAiPanelOpen(true);
     } catch (err) {
-      console.error('Failed to create conversation:', err);
+      toast.error('Failed to create conversation');
     }
   };
 
@@ -150,13 +161,17 @@ function WorkspacePage() {
 
     setSendingAi(true);
     const userMsg = { role: 'user', content: aiInput };
-    setAiMessages([...aiMessages, userMsg]);
-    
+    setAiMessages((prev) => [...prev, userMsg]);
+    const prompt = aiInput;
+    setAiInput('');
+
     try {
-      const response = await aiApi.sendMessage(currentConversation, aiInput);
-      setAiMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
-      setAiInput('');
-    } catch (err) {
+      const response = await aiApi.sendMessage(currentConversation, prompt);
+      setAiMessages((prev) => [
+        ...prev,
+        { role: normalizeAiRole(response.role), content: response.content },
+      ]);
+    } catch {
       toast.error('Failed to send message to AI');
     }
     setSendingAi(false);
@@ -164,12 +179,14 @@ function WorkspacePage() {
 
   return (
     <div className="workspace-layout">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">
+          <button type="button" className="btn btn-ghost sidebar-back" onClick={() => navigate('/dashboard')}>
+            ← Dashboard
+          </button>
           <h2>{currentWorkspace?.name || 'Loading...'}</h2>
         </div>
-        
+
         <nav className="sidebar-nav">
           <div className="nav-section">
             <div className="nav-section-title">Channels</div>
@@ -184,75 +201,62 @@ function WorkspacePage() {
               </div>
             ))}
             {showAddChannel ? (
-              <form onSubmit={handleAddChannel} style={{ padding: '0 20px', display: 'flex', gap: '8px' }}>
+              <form onSubmit={handleAddChannel} className="add-channel-form">
                 <input
                   type="text"
                   className="form-input"
                   placeholder="channel-name"
                   value={newChannelName}
                   onChange={(e) => setNewChannelName(e.target.value)}
-                  style={{ fontSize: '13px', padding: '8px' }}
                   autoFocus
                 />
-                <button type="submit" className="btn btn-primary" style={{ padding: '8px 12px' }}>Add</button>
+                <button type="submit" className="btn btn-primary">Add</button>
               </form>
             ) : (
-              <div 
-                className="nav-item" 
-                onClick={() => setShowAddChannel(true)}
-                style={{ opacity: 0.6, fontSize: '12px' }}
-              >
+              <div className="nav-item nav-item-muted" onClick={() => setShowAddChannel(true)}>
                 + Add channel
               </div>
             )}
           </div>
-          
-          <div className="nav-section">
-            <div className="nav-section-title">Links</div>
-            <div className="nav-item" onClick={() => navigate(`/workspace/${id}/tasks`)}>
-              Task Board
-            </div>
-            <div className="nav-item" onClick={() => navigate(`/workspace/${id}/ai`)}>
-              AI Assistant
-            </div>
-          </div>
         </nav>
-        
+
         <div className="members-section">
           <div className="nav-section-title">Members</div>
           <div className="members-list">
             {members.map((member) => (
               <div key={member.id} className="member-item">
-                <div className="member-avatar">
-                  {getInitials(member.name)}
-                </div>
+                <div className="member-avatar">{getInitials(member.name)}</div>
                 <span>{member.name}</span>
                 {member.isOnline && <div className="online-dot" />}
               </div>
             ))}
           </div>
         </div>
-        
+
         <div className="user-section">
-          <div className="member-avatar">
-            {getInitials(user?.name)}
-          </div>
+          <div className="member-avatar">{getInitials(displayName)}</div>
           <div className="user-info">
-            <div className="user-name">{user?.name}</div>
+            <div className="user-name">{displayName}</div>
             <div className="user-email">{user?.email}</div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }}>
+          <button type="button" onClick={handleLogout} className="btn btn-ghost btn-sm">
             Out
           </button>
         </div>
       </aside>
-      
-      {/* Chat Area */}
+
       <main className="chat-area">
         <div className="chat-header">
-          <h3># {channels.find(c => c.id === currentChannel)?.name || 'general'}</h3>
+          <h3># {channels.find((c) => c.id === currentChannel)?.name || 'general'}</h3>
+          <button
+            type="button"
+            className={`btn btn-secondary btn-sm ${aiPanelOpen ? 'active' : ''}`}
+            onClick={() => setAiPanelOpen(!aiPanelOpen)}
+          >
+            AI Assistant
+          </button>
         </div>
-        
+
         <div className="messages-container">
           {messages.length === 0 ? (
             <div className="empty-state">
@@ -262,18 +266,16 @@ function WorkspacePage() {
           ) : (
             messages.map((msg) => (
               <div key={msg.id} className="message">
-                <div className="message-avatar">
-                  {getInitials(msg.senderName)}
-                </div>
+                <div className="message-avatar">{getInitials(msg.senderName)}</div>
                 <div className="message-content">
                   <div className="message-header">
                     <span className="message-sender">{msg.senderName}</span>
-                    <span className="message-time">{formatTime(msg.timestamp)}</span>
+                    <span className="message-time">{formatTime(msg.timestamp || msg.createdAt)}</span>
                   </div>
                   {msg.isCode ? (
                     <div className="code-block">
-                      <SyntaxHighlighter 
-                        language="javascript" 
+                      <SyntaxHighlighter
+                        language="javascript"
                         style={oneDark}
                         customStyle={{ margin: 0, padding: 0, background: 'transparent' }}
                       >
@@ -289,12 +291,12 @@ function WorkspacePage() {
           )}
           <div ref={messagesEndRef} />
         </div>
-        
+
         <div className="message-input-container">
           <form onSubmit={handleSendMessage} className="message-input-wrapper">
             <textarea
               className="message-input"
-              placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || 'general'}`}
+              placeholder={`Message #${channels.find((c) => c.id === currentChannel)?.name || 'general'}`}
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={(e) => {
@@ -304,7 +306,7 @@ function WorkspacePage() {
                 }
               }}
             />
-            <button 
+            <button
               type="button"
               className={`code-toggle ${isCode ? 'active' : ''}`}
               onClick={() => setIsCode(!isCode)}
@@ -318,68 +320,68 @@ function WorkspacePage() {
           </form>
         </div>
       </main>
-      
-      {/* AI Panel */}
-      <aside className="ai-panel">
-        <div className="ai-header">
-          <h3>AI Assistant</h3>
-        </div>
-        
-        <div className="ai-conversations">
-          <button onClick={handleNewConversation} className="btn btn-secondary btn-full" style={{ marginBottom: '12px' }}>
-            New Conversation
-          </button>
-          <div className="conversation-list">
-            {aiConversations.slice(0, 5).map((conv) => (
-              <div
-                key={conv.id}
-                className={`conversation-item ${currentConversation === conv.id ? 'active' : ''}`}
-                onClick={() => handleSelectConversation(conv.id)}
-                style={{ 
-                  background: currentConversation === conv.id ? '#534AB7' : 'transparent',
-                  color: currentConversation === conv.id ? '#fff' : 'inherit'
-                }}
-              >
-                {conv.title || 'Untitled'}
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="ai-messages">
-          {aiMessages.length === 0 ? (
-            <div className="empty-state" style={{ padding: '20px' }}>
-              <p>Select a conversation or start a new one to chat with AI.</p>
-            </div>
-          ) : (
-            aiMessages.map((msg, idx) => (
-              <div key={idx} className={`ai-message ${msg.role}`}>
-                {msg.content}
-              </div>
-            ))
-          )}
-        </div>
-        
-        <div className="ai-input-container">
-          <form onSubmit={handleSendAiMessage} className="ai-input-wrapper">
-            <input
-              type="text"
-              className="ai-input"
-              placeholder="Ask AI..."
-              value={aiInput}
-              onChange={(e) => setAiInput(e.target.value)}
-              disabled={!currentConversation}
-            />
-            <button 
-              type="submit" 
-              className="ai-send-btn"
-              disabled={!aiInput.trim() || !currentConversation || sendingAi}
-            >
-              ➤
+
+      {aiPanelOpen && (
+        <aside className="ai-panel" ref={aiPanelRef}>
+          <div className="ai-header">
+            <h3>AI Assistant</h3>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAiPanelOpen(false)}>
+              ×
             </button>
-          </form>
-        </div>
-      </aside>
+          </div>
+
+          <div className="ai-conversations">
+            <button type="button" onClick={handleNewConversation} className="btn btn-secondary btn-full">
+              New Conversation
+            </button>
+            <div className="conversation-list">
+              {aiConversations.slice(0, 5).map((conv) => (
+                <div
+                  key={conv.id}
+                  className={`conversation-item ${currentConversation === conv.id ? 'active' : ''}`}
+                  onClick={() => handleSelectConversation(conv.id)}
+                >
+                  {conv.title || 'Untitled'}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="ai-messages">
+            {aiMessages.length === 0 ? (
+              <div className="empty-state" style={{ padding: '20px' }}>
+                <p>Select a conversation or start a new one to chat with AI.</p>
+              </div>
+            ) : (
+              aiMessages.map((msg, idx) => (
+                <div key={idx} className={`ai-message ${msg.role}`}>
+                  {msg.content}
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="ai-input-container">
+            <form onSubmit={handleSendAiMessage} className="ai-input-wrapper">
+              <input
+                type="text"
+                className="ai-input"
+                placeholder="Ask AI..."
+                value={aiInput}
+                onChange={(e) => setAiInput(e.target.value)}
+                disabled={!currentConversation}
+              />
+              <button
+                type="submit"
+                className="ai-send-btn"
+                disabled={!aiInput.trim() || !currentConversation || sendingAi}
+              >
+                ➤
+              </button>
+            </form>
+          </div>
+        </aside>
+      )}
     </div>
   );
 }

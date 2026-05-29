@@ -75,7 +75,7 @@ class ApiIntegrationTest {
 
 	@Test
 	void authenticatedUserCanUseWorkspaceChannelTaskAndAiEndpoints() throws Exception {
-		Long joinableWorkspaceId = createJoinableWorkspaceFixture();
+		String joinableInviteCode = createJoinableWorkspaceFixture();
 
 		String token = registerAndLogin();
 		String bearerToken = "Bearer " + token;
@@ -110,7 +110,7 @@ class ApiIntegrationTest {
 			post("/api/workspaces/join")
 				.header(AUTHORIZATION, bearerToken)
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(Map.of("workspaceId", joinableWorkspaceId)))
+				.content(objectMapper.writeValueAsString(Map.of("inviteCode", joinableInviteCode)))
 		)
 			.andExpect(status().isOk());
 
@@ -218,7 +218,7 @@ class ApiIntegrationTest {
 		return readString(loginResult, "token");
 	}
 
-	private Long createJoinableWorkspaceFixture() {
+	private String createJoinableWorkspaceFixture() {
 		User owner = new User();
 		owner.setName("Fixture Owner");
 		owner.setEmail("fixture.owner@example.com");
@@ -228,8 +228,9 @@ class ApiIntegrationTest {
 		Workspace workspace = new Workspace();
 		workspace.setName("Shared Workspace");
 		workspace.setDescription("Workspace available for join testing");
+		workspace.setInviteCode("JOINTEST");
 		workspace.setOwnerId(savedOwner.getId());
-		return workspaceRepository.save(workspace).getId();
+		return workspaceRepository.save(workspace).getInviteCode();
 	}
 
 	private Long readLong(MvcResult result, String fieldName) throws Exception {

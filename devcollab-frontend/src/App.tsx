@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import useAuthStore from './stores/authStore';
@@ -6,32 +7,60 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import WorkspacePage from './pages/WorkspacePage';
 
-// Protected route wrapper
 function ProtectedRoute({ children }) {
   const token = useAuthStore((state) => state.token);
-  
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+
+  if (!hasHydrated) {
+    return (
+      <div className="auth-layout">
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
+
   if (!token) {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 }
 
-// Public route wrapper - redirects to dashboard if already logged in
 function PublicRoute({ children }) {
   const token = useAuthStore((state) => state.token);
-  
+  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+
+  if (!hasHydrated) {
+    return (
+      <div className="auth-layout">
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
+
   if (token) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 }
 
 function App() {
+  const setHasHydrated = useAuthStore((state) => state.setHasHydrated);
+
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setHasHydrated(true);
+    });
+    if (useAuthStore.persist.hasHydrated()) {
+      setHasHydrated(true);
+    }
+    return unsub;
+  }, [setHasHydrated]);
+
   return (
     <BrowserRouter>
-      <Toaster 
+      <Toaster
         position="top-right"
         toastOptions={{
           duration: 3000,
@@ -55,37 +84,37 @@ function App() {
         }}
       />
       <Routes>
-        <Route 
-          path="/" 
+        <Route
+          path="/"
           element={
             <PublicRoute>
               <LoginPage />
             </PublicRoute>
-          } 
+          }
         />
-        <Route 
-          path="/register" 
+        <Route
+          path="/register"
           element={
             <PublicRoute>
               <RegisterPage />
             </PublicRoute>
-          } 
+          }
         />
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <DashboardPage />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/workspace/:id" 
+        <Route
+          path="/workspace/:id"
           element={
             <ProtectedRoute>
               <WorkspacePage />
             </ProtectedRoute>
-          } 
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

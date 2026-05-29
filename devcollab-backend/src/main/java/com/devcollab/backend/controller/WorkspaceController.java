@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.devcollab.backend.dto.CreateWorkspaceRequest;
 import com.devcollab.backend.dto.JoinWorkspaceRequest;
+import com.devcollab.backend.dto.WorkspaceMemberResponse;
 import com.devcollab.backend.dto.WorkspaceResponse;
 import com.devcollab.backend.service.WorkspaceService;
 
@@ -43,6 +44,11 @@ public class WorkspaceController {
 	@GetMapping("/{id}")
 	public ResponseEntity<WorkspaceResponse> getWorkspace(@PathVariable Long id) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceById(id));
+	}
+
+	@GetMapping("/{id}/members")
+	public ResponseEntity<List<WorkspaceMemberResponse>> getWorkspaceMembers(@PathVariable Long id) {
+		return ResponseEntity.ok(workspaceService.getWorkspaceMembers(id));
 	}
 
 	@PostMapping("/join")

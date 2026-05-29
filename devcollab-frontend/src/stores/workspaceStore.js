@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import toast from 'react-hot-toast';
 import * as workspaceApi from '../api/workspace';
 import * as channelApi from '../api/channel';
 import * as messageApi from '../api/message';
@@ -28,15 +29,19 @@ const useWorkspaceStore = create((set, get) => ({
     try {
       const workspace = await workspaceApi.getWorkspace(workspaceId);
       const channels = await channelApi.getChannels(workspaceId);
-      const members = await workspaceApi.getMembers(workspaceId);
-      set({ 
-        currentWorkspace: workspace, 
-        channels, 
+      let members = [];
+      try {
+        members = await workspaceApi.getMembers(workspaceId);
+      } catch {
+        members = [];
+      }
+      set({
+        currentWorkspace: workspace,
+        channels,
         members,
-        loading: false 
+        loading: false,
       });
-      
-      // Select first channel by default
+
       if (channels.length > 0) {
         get().setCurrentChannel(channels[0].id);
       }
@@ -53,7 +58,9 @@ const useWorkspaceStore = create((set, get) => ({
       set({ workspaces, currentWorkspace: workspace, loading: false });
       return workspace;
     } catch (error) {
-      set({ error: error.message, loading: false });
+      const msg = error.response?.data?.message || error.message || 'Failed to create workspace';
+      toast.error(msg);
+      set({ error: msg, loading: false });
       return null;
     }
   },
@@ -66,7 +73,9 @@ const useWorkspaceStore = create((set, get) => ({
       set({ loading: false });
       return workspace;
     } catch (error) {
-      set({ error: error.message, loading: false });
+      const msg = error.response?.data?.message || error.message || 'Failed to join workspace';
+      toast.error(msg);
+      set({ error: msg, loading: false });
       return null;
     }
   },
@@ -96,7 +105,7 @@ const useWorkspaceStore = create((set, get) => ({
   addChannel: async (name) => {
     const { currentWorkspace } = get();
     if (!currentWorkspace) return null;
-    
+
     try {
       const channel = await channelApi.createChannel(currentWorkspace.id, name);
       const channels = [...get().channels, channel];

@@ -54,6 +54,35 @@ export default function WorkspacePage() {
           <AIPanel />
         </div>
       )}
+
+      {!showAIPanel && (
+        <button
+          onClick={() => setShowAIPanel(true)}
+          style={{
+            position: 'absolute',
+            bottom: '2rem',
+            right: '2rem',
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--color-primary)',
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            cursor: 'pointer',
+            border: 'none',
+            zIndex: 1000,
+            transition: 'transform 0.2s'
+          }}
+          title="Open AI Assistant"
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <Bot size={28} />
+        </button>
+      )}
     </div>
   );
 }

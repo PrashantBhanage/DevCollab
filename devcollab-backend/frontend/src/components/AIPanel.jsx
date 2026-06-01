@@ -64,7 +64,29 @@ export default function AIPanel() {
       <div className="flex-1" style={{ overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {messages.length === 0 && !isLoading && (
           <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.9rem', marginTop: '2rem' }}>
-            Ask me anything about your workspace!
+            <p style={{ marginBottom: '1.5rem', fontWeight: '500' }}>
+              Ask AI to debug code, explain errors, optimize logic...
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+              <button 
+                onClick={() => setInput('Can you explain this error?')}
+                style={{ padding: '0.6rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.85rem', width: '90%', cursor: 'pointer', color: 'var(--color-text-main)', textAlign: 'left' }}
+              >
+                "Can you explain this error?"
+              </button>
+              <button 
+                onClick={() => setInput('Optimize this logic for me')}
+                style={{ padding: '0.6rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.85rem', width: '90%', cursor: 'pointer', color: 'var(--color-text-main)', textAlign: 'left' }}
+              >
+                "Optimize this logic for me"
+              </button>
+              <button 
+                onClick={() => setInput('Debug my code')}
+                style={{ padding: '0.6rem', backgroundColor: 'var(--color-bg-secondary)', borderRadius: '6px', border: '1px solid var(--color-border)', fontSize: '0.85rem', width: '90%', cursor: 'pointer', color: 'var(--color-text-main)', textAlign: 'left' }}
+              >
+                "Debug my code"
+              </button>
+            </div>
           </div>
         )}
         

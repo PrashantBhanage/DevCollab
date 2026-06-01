@@ -41,49 +41,47 @@ export default function ChatArea() {
   const renderContent = (msg: any) => {
     if (msg.isCode) {
       return (
-        <div style={{ marginTop: '0.5rem', borderRadius: '6px', overflow: 'hidden' }}>
-          <SyntaxHighlighter language="javascript" style={vscDarkPlus} customStyle={{ margin: 0, fontSize: '0.85rem' }}>
+        <div className="code-block">
+          <SyntaxHighlighter language="javascript" style={vscDarkPlus} customStyle={{ margin: 0, fontSize: '14px', background: 'transparent' }}>
             {msg.content}
           </SyntaxHighlighter>
         </div>
       );
     }
-    return <p style={{ marginTop: '0.2rem', lineHeight: '1.5' }}>{msg.content}</p>;
+    return <p className="message-text">{msg.content}</p>;
   };
 
   if (!currentChannel) {
     return (
-      <div className="flex-1 flex items-center justify-center" style={{ color: 'var(--color-text-dim)' }}>
-        Select or create a channel to start messaging
+      <div className="chat-area flex items-center justify-center">
+        <div className="empty-state-card" style={{ padding: '32px' }}>
+          <h3>Select a channel</h3>
+          <p>Choose a channel from the sidebar to start messaging.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-col flex-1 h-screen" style={{ backgroundColor: 'var(--color-bg-surface)' }}>
+    <div className="chat-area">
       {/* Header */}
-      <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-surface)' }}>
-        <h3 style={{ fontWeight: '600', fontSize: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ color: 'var(--color-text-muted)' }}>#</span> {channelObj?.name || 'general'}
+      <div className="chat-header">
+        <h3 className="flex items-center gap-2">
+          <span style={{ color: 'var(--color-accent)' }}>#</span> {channelObj?.name || 'general'}
         </h3>
       </div>
 
       {/* Messages */}
-      <div className="flex-1" style={{ overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="messages-container">
         {messages.map((msg: any, idx: number) => (
-          <div key={msg.id || idx} className="flex gap-3">
-            <div style={{ 
-              width: '36px', height: '36px', borderRadius: '6px', 
-              backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-main)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontWeight: '600', fontSize: '1rem', flexShrink: 0 
-            }}>
+          <div key={msg.id || idx} className="message">
+            <div className="message-avatar">
               {msg.senderName?.[0]?.toUpperCase() || 'U'}
             </div>
-            <div style={{ flex: 1 }}>
-              <div className="flex items-center gap-2">
-                <span style={{ fontWeight: '600', fontSize: '0.95rem' }}>{msg.senderName || 'Unknown'}</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+            <div className="message-content">
+              <div className="message-header">
+                <span className="message-sender">{msg.senderName || 'Unknown'}</span>
+                <span className="message-time">
                   {new Date(msg.timestamp || msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -95,32 +93,23 @@ export default function ChatArea() {
       </div>
 
       {/* Input */}
-      <div style={{ padding: '1.5rem', backgroundColor: 'var(--color-bg-surface)', borderTop: '1px solid var(--color-border)' }}>
-        <form onSubmit={handleSendMessage} style={{ 
-          display: 'flex', alignItems: 'flex-end', gap: '0.5rem', 
-          border: '1px solid var(--color-border)', borderRadius: '8px', 
-          padding: '0.5rem', backgroundColor: 'var(--color-bg-body)',
-          transition: 'border-color 0.2s'
-        }}>
+      <div className="message-input-container">
+        <form onSubmit={handleSendMessage} className="message-input-wrapper">
           <button 
             type="button"
             onClick={() => setIsCodeMode(!isCodeMode)}
-            className="btn-icon"
-            style={{ color: isCodeMode ? 'var(--color-primary)' : 'var(--color-text-muted)', alignSelf: 'center' }}
+            className={`code-toggle ${isCodeMode ? 'active' : ''}`}
             title="Toggle Code Block"
           >
-            <Code size={20} />
+            <Code size={24} />
           </button>
           
           <textarea 
+            className="message-input"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={isCodeMode ? "Paste your code here..." : `Message #${channelObj?.name || 'general'}`}
-            style={{ 
-              flex: 1, border: 'none', background: 'transparent', resize: 'none', 
-              maxHeight: '150px', minHeight: '24px', padding: '0.25rem', fontFamily: isCodeMode ? 'monospace' : 'inherit',
-              color: 'var(--color-text-main)', outline: 'none'
-            }}
+            placeholder={isCodeMode ? "PASTE YOUR CODE HERE..." : `MESSAGE #${(channelObj?.name || 'GENERAL').toUpperCase()}`}
+            style={{ fontFamily: isCodeMode ? 'monospace' : 'var(--font-family)' }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -131,11 +120,11 @@ export default function ChatArea() {
           
           <button 
             type="submit" 
-            className="btn-icon" 
+            className="btn btn-primary"
+            style={{ width: '56px', height: '56px', padding: 0 }}
             disabled={!newMessage.trim() || sending}
-            style={{ backgroundColor: newMessage.trim() ? 'var(--color-primary)' : 'transparent', color: newMessage.trim() ? 'white' : 'var(--color-text-muted)', alignSelf: 'center' }}
           >
-            <Send size={18} />
+            <Send size={24} />
           </button>
         </form>
       </div>

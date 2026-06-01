@@ -97,86 +97,55 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
   ];
 
   const content = (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      backgroundColor: 'var(--color-bg-surface)',
-      borderLeft: isModal ? 'none' : '1px solid var(--color-border)',
-      width: isModal ? '100%' : '350px'
-    }}>
+    <div className="ai-panel" style={{ width: isModal ? '100%' : '380px', borderLeft: isModal ? 'none' : '' }}>
       {/* Header */}
-      <div style={{ padding: '1.25rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="ai-header flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div style={{ padding: '0.4rem', borderRadius: '8px', backgroundColor: 'rgba(92, 94, 220, 0.1)', color: 'var(--color-primary)' }}>
-            <Sparkles size={18} />
-          </div>
+          <Sparkles size={24} color="var(--color-accent)" />
           <div>
-            <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>AI Assistant</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-accent)' }}>• Online</div>
+            <h3 style={{ margin: 0 }}>AI Assistant</h3>
+            <div style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 'var(--tracking-widest)' }}>• Online</div>
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="btn-icon" onClick={handleNewConversation} title="New Chat"><Trash2 size={16} /></button>
-          <button className="btn-icon" onClick={onClose}><X size={18} /></button>
+          <button className="btn-icon" onClick={handleNewConversation} title="New Chat" style={{ color: 'var(--color-text-inverse)' }}><Trash2 size={20} /></button>
+          <button className="btn-icon" onClick={onClose} style={{ color: 'var(--color-text-inverse)' }}><X size={20} /></button>
         </div>
       </div>
 
       {/* Messages */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className="ai-messages">
         {messages.length === 0 && !loading && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-dim)' }}>
-            <Bot size={40} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-            <p>Select a conversation or start a new one to chat with AI.</p>
+          <div className="empty-state-card" style={{ padding: '32px' }}>
+            <Bot size={48} style={{ margin: '0 auto 16px', color: 'var(--color-text-main)' }} />
+            <h3 style={{ fontSize: '24px' }}>Select a chat</h3>
+            <p>Start a new conversation to chat with AI.</p>
           </div>
         )}
         {messages.map((msg, idx) => (
-          <div key={idx} className="flex gap-3" style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
-            {msg.role === 'assistant' && (
-              <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--color-bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Bot size={16} color="var(--color-primary)" />
-              </div>
-            )}
-            <div style={{
-              padding: '0.8rem 1rem',
-              borderRadius: '12px',
-              backgroundColor: msg.role === 'user' ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-              color: msg.role === 'user' ? 'white' : 'var(--color-text-main)',
-              fontSize: '0.9rem',
-              lineHeight: '1.5',
-              borderTopRightRadius: msg.role === 'user' ? '2px' : '12px',
-              borderTopLeftRadius: msg.role === 'assistant' ? '2px' : '12px',
-            }}>
-              {msg.content}
-            </div>
+          <div key={idx} className={`ai-message ${msg.role}`}>
+            {msg.content}
           </div>
         ))}
         {loading && (
-          <div className="flex gap-3">
-            <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: 'var(--color-bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Bot size={16} color="var(--color-primary)" />
-            </div>
-            <div style={{ padding: '0.8rem 1rem', borderRadius: '12px', backgroundColor: 'var(--color-bg-secondary)', display: 'flex', gap: '4px' }}>
-              <div className="dot-typing"></div>
-              <div className="dot-typing" style={{ animationDelay: '0.2s' }}></div>
-              <div className="dot-typing" style={{ animationDelay: '0.4s' }}></div>
-            </div>
+          <div className="ai-message assistant">
+            <div className="loading-spinner" style={{ width: '24px', height: '24px', borderWidth: '4px' }}></div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Footer / Input */}
-      <div style={{ padding: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
+      <div className="ai-input-container">
         {messages.length === 0 && (
-          <div className="flex-col gap-2" style={{ marginBottom: '1.25rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Suggested Prompts</div>
+          <div className="flex-col gap-2" style={{ marginBottom: '24px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 'var(--tracking-widest)', color: 'var(--color-accent)' }}>Suggested</div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map(s => (
                 <button 
                   key={s} 
                   onClick={() => setInput(s)}
-                  style={{ padding: '0.4rem 0.8rem', borderRadius: '100px', backgroundColor: 'var(--color-bg-secondary)', fontSize: '0.75rem', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
+                  style={{ padding: '8px 16px', backgroundColor: 'var(--color-bg-base)', border: '2px solid var(--color-border)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer' }}
                 >
                   {s}
                 </button>
@@ -186,6 +155,7 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
         )}
         <form onSubmit={handleSend} style={{ position: 'relative' }}>
           <textarea 
+            className="ai-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -194,74 +164,31 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
                 handleSend(e);
               }
             }}
-            placeholder="Ask AI anything..."
-            style={{
-              width: '100%',
-              minHeight: '80px',
-              padding: '0.8rem 2.8rem 0.8rem 1rem',
-              backgroundColor: 'var(--color-bg-secondary)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '12px',
-              fontSize: '0.9rem',
-              resize: 'none',
-              color: 'var(--color-text-main)',
-              outline: 'none'
-            }}
+            placeholder="ASK AI ANYTHING..."
+            style={{ width: '100%', minHeight: '120px', resize: 'none', paddingRight: '72px' }}
           />
           <button 
             type="submit" 
+            className="ai-send-btn"
             disabled={!input.trim() || loading || !currentConversationId}
-            style={{
-              position: 'absolute',
-              right: '10px',
-              bottom: '10px',
-              padding: '0.5rem',
-              borderRadius: '8px',
-              backgroundColor: input.trim() ? 'var(--color-primary)' : 'transparent',
-              color: input.trim() ? 'white' : 'var(--color-text-dim)',
-              border: 'none',
-              cursor: 'pointer'
-            }}
+            style={{ position: 'absolute', right: '12px', bottom: '16px' }}
           >
-            <Send size={18} />
+            <Send size={24} />
           </button>
-          <div style={{ position: 'absolute', left: '12px', bottom: '12px', display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--color-text-dim)', fontSize: '0.7rem' }}>
-            <Command size={10} /> + Enter to send
+          <div style={{ position: 'absolute', left: '16px', bottom: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--color-text-main)' }}>
+            <Command size={12} /> + ENTER
           </div>
         </form>
       </div>
-
-      <style>{`
-        .dot-typing {
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background-color: var(--color-text-dim);
-          animation: dot-typing 1.4s infinite ease-in-out;
-        }
-        @keyframes dot-typing {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-4px); }
-        }
-      `}</style>
     </div>
   );
 
   if (isModal) {
     return (
-      <div style={{
-        position: 'fixed',
-        bottom: '80px',
-        right: '2rem',
-        width: '400px',
-        height: '600px',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
-        zIndex: 1000,
-        border: '1px solid var(--color-border)'
-      }}>
-        {content}
+      <div className="modal-overlay">
+        <div style={{ width: '480px', height: '80vh', border: '4px solid var(--color-border)', backgroundColor: 'var(--color-bg-base)', display: 'flex', flexDirection: 'column' }}>
+          {content}
+        </div>
       </div>
     );
   }

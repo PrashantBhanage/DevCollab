@@ -33,18 +33,17 @@ export default function WorkspacePage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-body)', color: 'var(--color-text-muted)' }}>
+      <div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-base)', color: 'var(--color-text-main)' }}>
         <div className="flex-col items-center gap-4">
-          <div style={{ width: '40px', height: '40px', border: '3px solid var(--color-border)', borderTopColor: 'var(--color-primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-          <span>Loading your workspace...</span>
+          <div className="loading-spinner"></div>
+          <span style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: 'var(--tracking-widest)' }}>Loading workspace...</span>
         </div>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="workspace-layout">
       <Sidebar workspaceId={id} />
       
       <div className="flex-1 flex flex-col min-w-0">

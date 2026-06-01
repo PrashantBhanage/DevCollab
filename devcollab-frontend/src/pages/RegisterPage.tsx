@@ -79,8 +79,8 @@ function RegisterPage() {
           </button>
         </form>
         
-        <p style={{ marginTop: '24px', textAlign: 'center' }}>
-          Already have an account?{' '}
+        <p style={{ marginTop: '32px' }}>
+          Already have an account? <br/>
           <Link to="/" className="auth-link">Sign in</Link>
         </p>
       </div>

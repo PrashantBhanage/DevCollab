@@ -65,8 +65,8 @@ function LoginPage() {
           </button>
         </form>
         
-        <p style={{ marginTop: '24px', textAlign: 'center' }}>
-          Don't have an account?{' '}
+        <p style={{ marginTop: '32px' }}>
+          Don't have an account? <br/>
           <Link to="/register" className="auth-link">Create one</Link>
         </p>
       </div>

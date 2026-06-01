@@ -95,18 +95,18 @@ function DashboardPage() {
 
       <div className="dashboard-body">
         <aside className="dashboard-sidebar">
-          <div className="dashboard-stat-card">
-            <span className="dashboard-stat-label">Workspaces</span>
-            <span className="dashboard-stat-value">{workspaces.length}</span>
+          <div className="sidebar-stat-card">
+            <span className="stat-label">Workspaces</span>
+            <span className="stat-value">{workspaces.length}</span>
           </div>
-          <div className="dashboard-stat-card">
-            <span className="dashboard-stat-label">You own</span>
-            <span className="dashboard-stat-value">{ownerCount}</span>
+          <div className="sidebar-stat-card">
+            <span className="stat-label">You own</span>
+            <span className="stat-value">{ownerCount}</span>
           </div>
           <AiPromoCard workspaces={workspaces} onOpenAi={handleOpenAi} />
-          <div className="dashboard-tip">
-            <strong>Tip</strong>
-            <p>Share your invite code so teammates can join instantly.</p>
+          <div className="sidebar-stat-card" style={{ marginTop: 'auto' }}>
+            <strong className="stat-label">Tip</strong>
+            <p style={{ fontSize: '14px', fontWeight: 500 }}>Share your invite code so teammates can join instantly.</p>
           </div>
         </aside>
 
@@ -124,8 +124,9 @@ function DashboardPage() {
             </div>
           </section>
 
-          <div className="dashboard-section-header">
-            <h3 className="section-title">Your workspaces</h3>
+          <div className="section-header">
+            <h3>Your workspaces</h3>
+            <span className="workspace-count">{workspaces.length}</span>
           </div>
 
           {loading && workspaces.length === 0 ? (
@@ -134,7 +135,7 @@ function DashboardPage() {
               <p>Loading workspaces...</p>
             </div>
           ) : workspaces.length === 0 ? (
-            <div className="empty-state dashboard-empty">
+            <div className="empty-state-card">
               <h3>No workspaces yet</h3>
               <p>Create a new workspace or join one with an invite code to get started.</p>
             </div>

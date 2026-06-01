@@ -91,35 +91,32 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
 
   const suggestions = [
     "Debug my latest commit",
-    "Explain this error: 'NullPointerException'",
-    "Optimize my React useEffect logic",
-    "Write a unit test for my AuthService"
+    "Explain this error",
+    "Optimize logic",
+    "Write a unit test"
   ];
 
   const content = (
-    <div className="ai-panel" style={{ width: isModal ? '100%' : '380px', borderLeft: isModal ? 'none' : '' }}>
+    <div className="ai-panel" style={{ width: isModal ? '100%' : 'var(--right-panel-width)', borderLeft: isModal ? 'none' : '' }}>
       {/* Header */}
-      <div className="ai-header flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Sparkles size={24} color="var(--color-accent)" />
-          <div>
-            <h3 style={{ margin: 0 }}>AI Assistant</h3>
-            <div style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 'var(--tracking-widest)' }}>• Online</div>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button className="btn-icon" onClick={handleNewConversation} title="New Chat" style={{ color: 'var(--color-text-inverse)' }}><Trash2 size={20} /></button>
-          <button className="btn-icon" onClick={onClose} style={{ color: 'var(--color-text-inverse)' }}><X size={20} /></button>
+      <div className="ai-header">
+        <h3 className="flex items-center gap-2 m-0" style={{ fontSize: '1.5rem' }}>
+          <Sparkles size={20} strokeWidth={1.5} color="var(--color-accent)" />
+          Assistant
+        </h3>
+        <div className="flex gap-2 items-center">
+          <span className="ai-status" style={{ marginRight: '1rem' }}>• Online</span>
+          <button className="btn-icon" onClick={handleNewConversation} title="New Chat"><Trash2 size={18} strokeWidth={1.5} /></button>
+          <button className="btn-icon" onClick={onClose}><X size={20} strokeWidth={1.5} /></button>
         </div>
       </div>
 
       {/* Messages */}
       <div className="ai-messages">
         {messages.length === 0 && !loading && (
-          <div className="empty-state-card" style={{ padding: '32px' }}>
-            <Bot size={48} style={{ margin: '0 auto 16px', color: 'var(--color-text-main)' }} />
-            <h3 style={{ fontSize: '24px' }}>Select a chat</h3>
-            <p>Start a new conversation to chat with AI.</p>
+          <div className="empty-state-card" style={{ padding: '2rem 0', border: 'none' }}>
+            <h3 style={{ fontSize: '1.5rem' }}>Start a dialogue</h3>
+            <p>Select a conversation or type a message below.</p>
           </div>
         )}
         {messages.map((msg, idx) => (
@@ -128,24 +125,25 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
           </div>
         ))}
         {loading && (
-          <div className="ai-message assistant">
-            <div className="loading-spinner" style={{ width: '24px', height: '24px', borderWidth: '4px' }}></div>
+          <div className="ai-message assistant flex items-center">
+            <div className="loading-spinner"></div>
           </div>
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Footer / Input */}
+      {/* Input */}
       <div className="ai-input-container">
         {messages.length === 0 && (
-          <div className="flex-col gap-2" style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '12px', fontWeight: '900', textTransform: 'uppercase', letterSpacing: 'var(--tracking-widest)', color: 'var(--color-accent)' }}>Suggested</div>
+          <div className="flex-col gap-2" style={{ marginBottom: '1.5rem' }}>
+            <div className="label-mono">Suggested</div>
             <div className="flex flex-wrap gap-2">
               {suggestions.map(s => (
                 <button 
                   key={s} 
                   onClick={() => setInput(s)}
-                  style={{ padding: '8px 16px', backgroundColor: 'var(--color-bg-base)', border: '2px solid var(--color-border)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer' }}
+                  className="btn-ghost"
+                  style={{ border: '1px solid var(--color-border)', height: '2rem', fontSize: '0.75rem', padding: '0 0.75rem' }}
                 >
                   {s}
                 </button>
@@ -164,20 +162,17 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
                 handleSend(e);
               }
             }}
-            placeholder="ASK AI ANYTHING..."
-            style={{ width: '100%', minHeight: '120px', resize: 'none', paddingRight: '72px' }}
+            placeholder="Ask AI anything..."
+            style={{ paddingRight: '4rem', minHeight: '100px' }}
           />
           <button 
             type="submit" 
             className="ai-send-btn"
             disabled={!input.trim() || loading || !currentConversationId}
-            style={{ position: 'absolute', right: '12px', bottom: '16px' }}
+            style={{ position: 'absolute', right: '1rem', bottom: '1rem', padding: '0.25rem' }}
           >
-            <Send size={24} />
+            <Send size={20} strokeWidth={1.5} />
           </button>
-          <div style={{ position: 'absolute', left: '16px', bottom: '16px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', color: 'var(--color-text-main)' }}>
-            <Command size={12} /> + ENTER
-          </div>
         </form>
       </div>
     </div>
@@ -186,7 +181,7 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
   if (isModal) {
     return (
       <div className="modal-overlay">
-        <div style={{ width: '480px', height: '80vh', border: '4px solid var(--color-border)', backgroundColor: 'var(--color-bg-base)', display: 'flex', flexDirection: 'column' }}>
+        <div className="modal" style={{ padding: 0, height: '80vh', display: 'flex', flexDirection: 'column', maxWidth: '600px' }}>
           {content}
         </div>
       </div>

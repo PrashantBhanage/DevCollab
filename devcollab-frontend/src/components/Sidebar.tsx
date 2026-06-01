@@ -17,24 +17,24 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
   const location = useLocation();
 
   const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
-    { icon: <Sparkles size={20} />, label: 'AI Assistant', path: `/workspace/${workspaceId}?panel=ai` },
-    { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
+    { icon: <LayoutDashboard size={20} strokeWidth={1.5} />, label: 'Dashboard', path: '/dashboard' },
+    { icon: <Sparkles size={20} strokeWidth={1.5} />, label: 'AI Assistant', path: `/workspace/${workspaceId}?panel=ai` },
+    { icon: <Settings size={20} strokeWidth={1.5} />, label: 'Settings', path: '/settings' },
   ];
 
   return (
     <aside className="sidebar">
-      {/* Logo & Workspace Switcher */}
+      {/* Header */}
       <div className="sidebar-header">
-        <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
-          <div className="flex items-center gap-2">
-            <div className="brand-mark" style={{ width: '32px', height: '32px', fontSize: '18px' }}>D</div>
-            <h2 style={{ fontSize: '1.25rem', letterSpacing: 'var(--tracking-tighter)' }}>DevCollab</h2>
-          </div>
-        </div>
-        <button className="flex items-center justify-between w-full" style={{ padding: '8px 12px', border: '2px solid var(--color-border)', backgroundColor: 'var(--color-bg-base)', fontWeight: 900, textTransform: 'uppercase', fontSize: '12px' }}>
-          <span>Select Workspace</span>
-          <ChevronDown size={16} />
+        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: '1.25rem', letterSpacing: 'var(--tracking-tighter)' }}>
+          DevCollab
+        </h2>
+      </div>
+
+      <div style={{ padding: '2rem 2rem 0' }}>
+        <button className="flex items-center justify-between w-full" style={{ background: 'transparent', border: 'none', color: 'var(--color-text-main)', padding: '0', cursor: 'pointer', outline: 'none' }}>
+          <span className="label-mono" style={{ color: 'var(--color-text-main)' }}>Select Workspace</span>
+          <ChevronDown size={16} strokeWidth={1.5} color="var(--color-text-muted)" />
         </button>
       </div>
 
@@ -47,10 +47,9 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
               <button 
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`nav-item w-full ${isActive ? 'active' : ''}`}
-                style={{ textAlign: 'left', background: isActive ? 'var(--color-text-main)' : 'transparent', border: 'none', borderLeft: isActive ? '8px solid var(--color-accent)' : '8px solid transparent' }}
+                className={`nav-item ${isActive ? 'active' : ''}`}
               >
-                <span className="channel-icon">{item.icon}</span>
+                <span className="channel-icon" style={{ color: isActive ? 'var(--color-accent)' : 'inherit' }}>{item.icon}</span>
                 {item.label}
               </button>
             );
@@ -59,9 +58,9 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
 
         {/* Workspaces Section */}
         <div className="nav-section">
-          <div className="flex items-center justify-between" style={{ paddingRight: '24px' }}>
+          <div className="flex items-center justify-between" style={{ paddingRight: '2rem' }}>
             <h3 className="nav-section-title">Workspaces</h3>
-            <button style={{ color: 'var(--color-text-main)', border: 'none', background: 'transparent', cursor: 'pointer', paddingBottom: '16px' }}><Plus size={16} /></button>
+            <button className="btn-icon"><Plus size={16} strokeWidth={1.5} /></button>
           </div>
           <div className="flex-col">
             {workspaces.map((ws: any) => {
@@ -70,10 +69,9 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
                 <button 
                   key={ws.id}
                   onClick={() => navigate(`/workspace/${ws.id}`)}
-                  className={`nav-item w-full ${isActive ? 'active' : ''}`}
-                  style={{ textAlign: 'left', background: isActive ? 'var(--color-text-main)' : 'transparent', border: 'none', borderLeft: isActive ? '8px solid var(--color-accent)' : '8px solid transparent' }}
+                  className={`nav-item ${isActive ? 'active' : ''}`}
                 >
-                  <div style={{ width: '8px', height: '8px', backgroundColor: 'var(--color-accent)', marginRight: '12px' }}></div>
+                  <span className="channel-icon label-mono" style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)', fontSize: '1rem', width: '20px', textAlign: 'left' }}>#</span>
                   {ws.name}
                 </button>
               );
@@ -82,14 +80,14 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
         </div>
       </nav>
 
-      {/* User Footer */}
+      {/* Footer */}
       <div className="user-section">
         <button 
           onClick={() => { logout(); navigate('/'); }}
-          className="nav-item w-full"
-          style={{ color: 'var(--color-accent)', border: 'none', background: 'transparent', textAlign: 'left' }}
+          className="nav-item"
+          style={{ padding: '0', color: 'var(--color-text-muted)' }}
         >
-          <LogOut size={20} className="channel-icon" />
+          <LogOut size={20} strokeWidth={1.5} className="channel-icon" />
           Sign Out
         </button>
       </div>

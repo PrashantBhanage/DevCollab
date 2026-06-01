@@ -4,6 +4,7 @@ import useAuthStore from '../stores/authStore';
 import useWorkspaceStore from '../stores/workspaceStore';
 import AiPromoCard from '../components/AiPromoCard';
 import toast from 'react-hot-toast';
+import { Copy, Plus, Users, Monitor, ArrowRight } from 'lucide-react';
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -70,7 +71,6 @@ function DashboardPage() {
   };
 
   const displayName = user?.username || user?.name || 'User';
-  const ownerCount = workspaces.filter((w) => w.role === 'OWNER').length;
 
   const handleOpenAi = (workspaceId) => {
     navigate(`/workspace/${workspaceId}?panel=ai`);
@@ -79,138 +79,129 @@ function DashboardPage() {
   return (
     <div className="dashboard-layout">
       <header className="dashboard-header">
-        <h1>DevCollab</h1>
+        <div className="dashboard-brand">DevCollab</div>
         <div className="dashboard-header-actions">
-          <div className="dashboard-user">
-            <div className="member-avatar dashboard-avatar">
+          <div className="user-chip">
+            <div className="user-avatar">
               {getInitials(displayName)}
             </div>
             <span>{displayName}</span>
           </div>
-          <button type="button" onClick={handleLogout} className="btn btn-ghost">
+          <button type="button" onClick={handleLogout} className="btn-ghost" style={{ textTransform: 'uppercase', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.1em' }}>
             Sign out
           </button>
         </div>
       </header>
 
       <div className="dashboard-body">
-        <aside className="dashboard-sidebar">
-          <div className="sidebar-stat-card">
-            <span className="stat-label">Workspaces</span>
-            <span className="stat-value">{workspaces.length}</span>
-          </div>
-          <div className="sidebar-stat-card">
-            <span className="stat-label">You own</span>
-            <span className="stat-value">{ownerCount}</span>
-          </div>
-          <AiPromoCard workspaces={workspaces} onOpenAi={handleOpenAi} />
-          <div className="sidebar-stat-card" style={{ marginTop: 'auto' }}>
-            <strong className="stat-label">Tip</strong>
-            <p style={{ fontSize: '14px', fontWeight: 500 }}>Share your invite code so teammates can join instantly.</p>
-          </div>
-        </aside>
-
         <main className="dashboard-main">
-          <section className="dashboard-hero">
-            <h2>Build together</h2>
-            <p>Create a workspace, invite your team, and collaborate with channels and AI.</p>
-            <div className="dashboard-hero-actions">
-              <button type="button" onClick={() => setShowCreateModal(true)} className="btn btn-primary">
-                Create workspace
-              </button>
-              <button type="button" onClick={() => setShowJoinModal(true)} className="btn btn-secondary">
-                Join with code
-              </button>
-            </div>
-          </section>
+          <div className="dashboard-content">
+            
+            <section className="dashboard-hero">
+              <h1 className="headline-hero">Build<br/>together.</h1>
+              <p>Create a workspace, invite your team, and collaborate with channels and AI. Your ideas, executed decisively.</p>
+              
+              <div className="flex gap-6 items-center flex-wrap">
+                <button type="button" onClick={() => setShowCreateModal(true)} className="btn btn-primary" style={{ padding: '1rem 0' }}>
+                  <span className="flex items-center gap-2">Create Workspace <ArrowRight size={20} /></span>
+                </button>
+                <button type="button" onClick={() => setShowJoinModal(true)} className="btn btn-secondary">
+                  Join with code
+                </button>
+              </div>
+            </section>
 
-          <div className="section-header">
-            <h3>Your workspaces</h3>
-            <span className="workspace-count">{workspaces.length}</span>
-          </div>
+            <div className="section-header">
+              <h2 className="headline-section">Workspaces</h2>
+              <span className="workspace-count">{workspaces.length} active</span>
+            </div>
 
-          {loading && workspaces.length === 0 ? (
-            <div className="empty-state">
-              <div className="loading-spinner" style={{ margin: '0 auto 16px' }} />
-              <p>Loading workspaces...</p>
-            </div>
-          ) : workspaces.length === 0 ? (
-            <div className="empty-state-card">
-              <h3>No workspaces yet</h3>
-              <p>Create a new workspace or join one with an invite code to get started.</p>
-            </div>
-          ) : (
-            <div className="workspace-grid">
-              {workspaces.map((workspace) => (
-                <div
-                  key={workspace.id}
-                  className="workspace-card"
-                  onClick={() => navigate(`/workspace/${workspace.id}`)}
-                  onKeyDown={(e) => e.key === 'Enter' && navigate(`/workspace/${workspace.id}`)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="workspace-card-top">
+            {loading && workspaces.length === 0 ? (
+              <div className="empty-state-card" style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: 'none' }}>
+                <div className="loading-spinner" />
+                <span className="label-mono">Loading data</span>
+              </div>
+            ) : workspaces.length === 0 ? (
+              <div className="empty-state-card">
+                <h3>Empty canvas</h3>
+                <p>You don't have any workspaces yet. Time to start building.</p>
+              </div>
+            ) : (
+              <div className="workspace-grid">
+                {workspaces.map((workspace) => (
+                  <div
+                    key={workspace.id}
+                    className="workspace-card"
+                    onClick={() => navigate(`/workspace/${workspace.id}`)}
+                    onKeyDown={(e) => e.key === 'Enter' && navigate(`/workspace/${workspace.id}`)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="workspace-card-role">
+                      {workspace.role || 'Member'}
+                    </div>
+                    
                     <h3>{workspace.name}</h3>
-                    <span className={`workspace-card-role role-${(workspace.role || 'MEMBER').toLowerCase()}`}>
-                      {workspace.role || 'MEMBER'}
-                    </span>
+                    <p>{workspace.description || 'No description provided.'}</p>
+                    
+                    <div className="flex items-end justify-between mt-auto">
+                      {workspace.inviteCode ? (
+                        <button
+                          type="button"
+                          className="invite-code-chip flex-1"
+                          style={{ maxWidth: '60%' }}
+                          onClick={(e) => copyInviteCode(e, workspace.inviteCode)}
+                          title="Copy invite code"
+                        >
+                          <Copy size={16} />
+                          <code>{workspace.inviteCode}</code>
+                        </button>
+                      ) : (
+                        <div className="flex-1"></div>
+                      )}
+                      
+                      <button
+                        type="button"
+                        className="btn-icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenAi(workspace.id);
+                        }}
+                      >
+                        <Monitor size={24} />
+                      </button>
+                    </div>
                   </div>
-                  <p>{workspace.description || 'No description'}</p>
-                  {workspace.inviteCode && (
-                    <button
-                      type="button"
-                      className="invite-code-chip"
-                      onClick={(e) => copyInviteCode(e, workspace.inviteCode)}
-                      title="Copy invite code"
-                    >
-                      <span className="invite-code-label">Invite</span>
-                      <code>{workspace.inviteCode}</code>
-                    </button>
-                  )}
-                  <div className="workspace-card-footer">
-                    <span>Click to open</span>
-                    <button
-                      type="button"
-                      className="btn btn-ghost workspace-ai-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenAi(workspace.id);
-                      }}
-                    >
-                      AI →
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </main>
       </div>
 
       {showCreateModal && (
         <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Create workspace</h2>
+            <h2>New Workspace</h2>
             <form onSubmit={handleCreateWorkspace}>
               <div className="form-group">
-                <label htmlFor="ws-name">Workspace name</label>
+                <label htmlFor="ws-name">Name</label>
                 <input
                   id="ws-name"
                   type="text"
                   className="form-input"
-                  placeholder="My awesome project"
+                  placeholder="e.g. Apollo Project"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="ws-desc">Description (optional)</label>
+                <label htmlFor="ws-desc">Description</label>
                 <input
                   id="ws-desc"
                   type="text"
                   className="form-input"
-                  placeholder="What is this workspace for?"
+                  placeholder="What are we building?"
                   value={workspaceDescription}
                   onChange={(e) => setWorkspaceDescription(e.target.value)}
                 />
@@ -219,7 +210,7 @@ function DashboardPage() {
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-ghost">
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-secondary">
                   Create
                 </button>
               </div>
@@ -231,15 +222,15 @@ function DashboardPage() {
       {showJoinModal && (
         <div className="modal-overlay" onClick={() => setShowJoinModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Join workspace</h2>
+            <h2>Join Workspace</h2>
             <form onSubmit={handleJoinWorkspace}>
               <div className="form-group">
-                <label htmlFor="invite-code">Invite code</label>
+                <label htmlFor="invite-code">Access Code</label>
                 <input
                   id="invite-code"
                   type="text"
                   className="form-input"
-                  placeholder="Enter invite code"
+                  placeholder="Enter the 8-character code"
                   value={inviteCodeInput}
                   onChange={(e) => setInviteCodeInput(e.target.value)}
                 />
@@ -248,8 +239,8 @@ function DashboardPage() {
                 <button type="button" onClick={() => setShowJoinModal(false)} className="btn btn-ghost">
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Join
+                <button type="submit" className="btn btn-secondary">
+                  Enter
                 </button>
               </div>
             </form>

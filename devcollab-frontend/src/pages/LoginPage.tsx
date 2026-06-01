@@ -30,12 +30,12 @@ function LoginPage() {
   return (
     <div className="auth-layout">
       <div className="auth-card">
-        <h1>Welcome back</h1>
-        <p>Sign in to continue to your workspaces</p>
+        <h1>Welcome</h1>
+        <p>Sign in to continue.</p>
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               id="email"
               type="email"
@@ -60,15 +60,17 @@ function LoginPage() {
             />
           </div>
           
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? <span className="loading-spinner" /> : 'Sign in'}
-          </button>
+          <div style={{ marginTop: '3rem', marginBottom: '2rem' }}>
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+              {loading ? <span className="loading-spinner" /> : 'Sign in'}
+            </button>
+          </div>
         </form>
         
-        <p style={{ marginTop: '32px' }}>
-          Don't have an account? <br/>
+        <div>
+          <span className="label-mono" style={{ marginRight: '1rem' }}>No account?</span>
           <Link to="/register" className="auth-link">Create one</Link>
-        </p>
+        </div>
       </div>
     </div>
   );

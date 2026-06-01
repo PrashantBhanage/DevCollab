@@ -42,7 +42,7 @@ export default function ChatArea() {
     if (msg.isCode) {
       return (
         <div className="code-block">
-          <SyntaxHighlighter language="javascript" style={vscDarkPlus} customStyle={{ margin: 0, fontSize: '14px', background: 'transparent' }}>
+          <SyntaxHighlighter language="javascript" style={vscDarkPlus} customStyle={{ margin: 0, fontSize: '0.875rem', background: 'transparent' }}>
             {msg.content}
           </SyntaxHighlighter>
         </div>
@@ -54,8 +54,8 @@ export default function ChatArea() {
   if (!currentChannel) {
     return (
       <div className="chat-area flex items-center justify-center">
-        <div className="empty-state-card" style={{ padding: '32px' }}>
-          <h3>Select a channel</h3>
+        <div className="empty-state-card" style={{ padding: '4rem', textAlign: 'center', border: 'none' }}>
+          <h3 style={{ fontSize: '2rem' }}>Select a channel</h3>
           <p>Choose a channel from the sidebar to start messaging.</p>
         </div>
       </div>
@@ -66,8 +66,8 @@ export default function ChatArea() {
     <div className="chat-area">
       {/* Header */}
       <div className="chat-header">
-        <h3 className="flex items-center gap-2">
-          <span style={{ color: 'var(--color-accent)' }}>#</span> {channelObj?.name || 'general'}
+        <h3 className="flex items-baseline gap-2">
+          <span style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-mono)' }}>#</span> {channelObj?.name || 'general'}
         </h3>
       </div>
 
@@ -94,22 +94,22 @@ export default function ChatArea() {
 
       {/* Input */}
       <div className="message-input-container">
-        <form onSubmit={handleSendMessage} className="message-input-wrapper">
+        <form onSubmit={handleSendMessage} className="message-input-wrapper w-full">
           <button 
             type="button"
             onClick={() => setIsCodeMode(!isCodeMode)}
             className={`code-toggle ${isCodeMode ? 'active' : ''}`}
             title="Toggle Code Block"
           >
-            <Code size={24} />
+            <Code size={20} strokeWidth={1.5} />
           </button>
           
           <textarea 
             className="message-input"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder={isCodeMode ? "PASTE YOUR CODE HERE..." : `MESSAGE #${(channelObj?.name || 'GENERAL').toUpperCase()}`}
-            style={{ fontFamily: isCodeMode ? 'monospace' : 'var(--font-family)' }}
+            placeholder={isCodeMode ? "Paste your code here..." : `Message #${(channelObj?.name || 'general')}`}
+            style={{ fontFamily: isCodeMode ? 'var(--font-mono)' : 'var(--font-body)' }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -121,10 +121,10 @@ export default function ChatArea() {
           <button 
             type="submit" 
             className="btn btn-primary"
-            style={{ width: '56px', height: '56px', padding: 0 }}
+            style={{ width: '64px', height: '64px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             disabled={!newMessage.trim() || sending}
           >
-            <Send size={24} />
+            <Send size={24} strokeWidth={1.5} />
           </button>
         </form>
       </div>

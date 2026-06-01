@@ -32,7 +32,7 @@ function RegisterPage() {
     <div className="auth-layout">
       <div className="auth-card">
         <h1>Create account</h1>
-        <p>Start collaborating with your team</p>
+        <p>Start collaborating today.</p>
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -49,7 +49,7 @@ function RegisterPage() {
           </div>
           
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">Email address</label>
             <input
               id="email"
               type="email"
@@ -74,15 +74,17 @@ function RegisterPage() {
             />
           </div>
           
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? <span className="loading-spinner" /> : 'Create account'}
-          </button>
+          <div style={{ marginTop: '3rem', marginBottom: '2rem' }}>
+            <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
+              {loading ? <span className="loading-spinner" /> : 'Create account'}
+            </button>
+          </div>
         </form>
         
-        <p style={{ marginTop: '32px' }}>
-          Already have an account? <br/>
+        <div>
+          <span className="label-mono" style={{ marginRight: '1rem' }}>Have account?</span>
           <Link to="/" className="auth-link">Sign in</Link>
-        </p>
+        </div>
       </div>
     </div>
   );

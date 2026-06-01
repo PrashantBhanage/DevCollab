@@ -1,8 +1,11 @@
 import { Search, Bell, Plus, User } from 'lucide-react';
 import useAuthStore from '../stores/authStore';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export default function TopBar() {
   const { user } = useAuthStore() as any;
+  const navigate = useNavigate();
 
   return (
     <header style={{
@@ -33,12 +36,12 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-6">
-        <button className="btn btn-primary" style={{ padding: '0', height: 'auto', fontSize: '0.875rem' }}>
+        <button className="btn btn-primary" style={{ padding: '0', height: 'auto', fontSize: '0.875rem' }} onClick={() => navigate('/dashboard')}>
           <span className="flex items-center gap-2">
             New Workspace
           </span>
         </button>
-        <button className="btn-icon">
+        <button className="btn-icon" onClick={() => toast.success('You have no new notifications')}>
           <Bell size={20} strokeWidth={1.5} />
         </button>
         <div className="flex items-center gap-3">

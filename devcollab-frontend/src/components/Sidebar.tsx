@@ -32,7 +32,7 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
       </div>
 
       <div style={{ padding: '2rem 2rem 0' }}>
-        <button className="flex items-center justify-between w-full" style={{ background: 'transparent', border: 'none', color: 'var(--color-text-main)', padding: '0', cursor: 'pointer', outline: 'none' }}>
+        <button className="flex items-center justify-between w-full" onClick={() => navigate('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'var(--color-text-main)', padding: '0', cursor: 'pointer', outline: 'none' }}>
           <span className="label-mono" style={{ color: 'var(--color-text-main)' }}>Select Workspace</span>
           <ChevronDown size={16} strokeWidth={1.5} color="var(--color-text-muted)" />
         </button>
@@ -60,7 +60,7 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
         <div className="nav-section">
           <div className="flex items-center justify-between" style={{ paddingRight: '2rem' }}>
             <h3 className="nav-section-title">Workspaces</h3>
-            <button className="btn-icon"><Plus size={16} strokeWidth={1.5} /></button>
+            <button className="btn-icon" onClick={() => navigate('/dashboard')}><Plus size={16} strokeWidth={1.5} /></button>
           </div>
           <div className="flex-col">
             {workspaces.map((ws: any) => {

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, X, Bot, Trash2, Command } from 'lucide-react';
+import { Sparkles, Send, X, Bot, Plus, Command } from 'lucide-react';
 import * as aiApi from '../api/ai';
 import useWorkspaceStore from '../stores/workspaceStore';
 import toast from 'react-hot-toast';
@@ -68,7 +68,23 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading || !currentConversationId) return;
+    if (!input.trim() || loading) return;
+
+    let targetConvId = currentConversationId;
+
+    if (!targetConvId) {
+      try {
+        setLoading(true);
+        const conv = await aiApi.createConversation(currentWorkspace.id, 'New Chat');
+        setConversations([conv, ...conversations]);
+        setCurrentConversationId(conv.id);
+        targetConvId = conv.id;
+      } catch (err) {
+        toast.error('Failed to create conversation');
+        setLoading(false);
+        return;
+      }
+    }
 
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
@@ -77,7 +93,7 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
     setLoading(true);
 
     try {
-      const response = await aiApi.sendMessage(currentConversationId, prompt);
+      const response = await aiApi.sendMessage(targetConvId, prompt);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: response.content 
@@ -106,7 +122,7 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
         </h3>
         <div className="flex gap-2 items-center">
           <span className="ai-status" style={{ marginRight: '1rem' }}>• Online</span>
-          <button className="btn-icon" onClick={handleNewConversation} title="New Chat"><Trash2 size={18} strokeWidth={1.5} /></button>
+          <button className="btn-icon" onClick={handleNewConversation} title="New Chat"><Plus size={18} strokeWidth={1.5} /></button>
           <button className="btn-icon" onClick={onClose}><X size={20} strokeWidth={1.5} /></button>
         </div>
       </div>
@@ -168,7 +184,7 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
           <button 
             type="submit" 
             className="ai-send-btn"
-            disabled={!input.trim() || loading || !currentConversationId}
+            disabled={!input.trim() || loading}
             style={{ position: 'absolute', right: '1rem', bottom: '1rem', padding: '0.25rem' }}
           >
             <Send size={20} strokeWidth={1.5} />

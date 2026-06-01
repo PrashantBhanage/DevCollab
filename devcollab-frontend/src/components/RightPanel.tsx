@@ -1,6 +1,9 @@
 import { Sparkles, Calendar, CheckSquare, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function RightPanel() {
+  const [_, setSearchParams] = useSearchParams();
+
   return (
     <aside style={{
       width: 'var(--right-panel-width)',
@@ -20,7 +23,10 @@ export default function RightPanel() {
         <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
           Ask AI to debug code, explain errors, or optimize logic directly in your context.
         </p>
-        <button className="btn btn-secondary btn-full">
+        <button 
+          className="btn btn-secondary btn-full"
+          onClick={() => setSearchParams({ panel: 'ai' })}
+        >
           Ask Assistant
         </button>
       </section>

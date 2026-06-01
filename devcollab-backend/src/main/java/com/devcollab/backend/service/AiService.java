@@ -59,6 +59,7 @@ public class AiService {
                 AiConversation conversation = AiConversation.builder()
                         .workspaceId(request.workspaceId())
                         .userId(currentUser.getId())
+                        .title(request.title() != null && !request.title().isBlank() ? request.title() : "New Conversation")
                         .build();
 
                 return toResponse(aiConversationRepository.save(conversation));

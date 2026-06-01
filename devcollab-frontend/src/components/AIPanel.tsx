@@ -1,37 +1,92 @@
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, X, Bot, User, Trash2, Command } from 'lucide-react';
+import { Sparkles, Send, X, Bot, Trash2, Command } from 'lucide-react';
+import * as aiApi from '../api/ai';
+import useWorkspaceStore from '../stores/workspaceStore';
+import toast from 'react-hot-toast';
 
-export default function AIPanel({ onClose, isModal }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hello! I am your DevCollab AI assistant. How can I help you with your code today?' }
-  ]);
+export default function AIPanel({ onClose, isModal }: { onClose: () => void, isModal?: boolean }) {
+  const { currentWorkspace } = useWorkspaceStore() as any;
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
+    if (currentWorkspace?.id) {
+      loadConversations();
+    }
+  }, [currentWorkspace]);
+
+  useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e) => {
+  const loadConversations = async () => {
+    try {
+      const convs = await aiApi.getConversations(currentWorkspace.id);
+      setConversations(convs);
+      if (convs.length > 0 && !currentConversationId) {
+        handleSelectConversation(convs[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load AI conversations');
+    }
+  };
+
+  const handleSelectConversation = async (id: number) => {
+    setCurrentConversationId(id);
+    setLoading(true);
+    try {
+      const msgs = await aiApi.getMessages(id);
+      setMessages(msgs.map((m: any) => ({
+        role: m.role.toLowerCase() === 'ai' ? 'assistant' : 'user',
+        content: m.content
+      })));
+    } catch (err) {
+      toast.error('Failed to load messages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewConversation = async () => {
+    try {
+      const conv = await aiApi.createConversation(currentWorkspace.id, 'New Chat');
+      setConversations([conv, ...conversations]);
+      setCurrentConversationId(conv.id);
+      setMessages([]);
+    } catch (err) {
+      toast.error('Failed to create conversation');
+    }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || !currentConversationId) return;
 
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
+    const prompt = input;
     setInput('');
     setLoading(true);
 
-    // Simulated AI Response
-    setTimeout(() => {
-      const assistantMessage = { role: 'assistant', content: `I've analyzed your request about "${input}". This feature is currently in development, but soon I'll be able to help you debug code, explain errors, and optimize your logic directly within your workspaces!` };
-      setMessages(prev => [...prev, assistantMessage]);
+    try {
+      const response = await aiApi.sendMessage(currentConversationId, prompt);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.content 
+      }]);
+    } catch (err) {
+      toast.error('Failed to get AI response');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const suggestions = [
@@ -62,13 +117,19 @@ export default function AIPanel({ onClose, isModal }) {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="btn-icon" onClick={() => setMessages([messages[0]])}><Trash2 size={16} /></button>
+          <button className="btn-icon" onClick={handleNewConversation} title="New Chat"><Trash2 size={16} /></button>
           <button className="btn-icon" onClick={onClose}><X size={18} /></button>
         </div>
       </div>
 
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {messages.length === 0 && !loading && (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-dim)' }}>
+            <Bot size={40} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+            <p>Select a conversation or start a new one to chat with AI.</p>
+          </div>
+        )}
         {messages.map((msg, idx) => (
           <div key={idx} className="flex gap-3" style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%' }}>
             {msg.role === 'assistant' && (
@@ -107,7 +168,7 @@ export default function AIPanel({ onClose, isModal }) {
 
       {/* Footer / Input */}
       <div style={{ padding: '1.25rem', borderTop: '1px solid var(--color-border)' }}>
-        {messages.length === 1 && (
+        {messages.length === 0 && (
           <div className="flex-col gap-2" style={{ marginBottom: '1.25rem' }}>
             <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Suggested Prompts</div>
             <div className="flex flex-wrap gap-2">
@@ -115,7 +176,7 @@ export default function AIPanel({ onClose, isModal }) {
                 <button 
                   key={s} 
                   onClick={() => setInput(s)}
-                  style={{ padding: '0.4rem 0.8rem', borderRadius: '100px', backgroundColor: 'var(--color-bg-secondary)', fontSize: '0.75rem', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)' }}
+                  style={{ padding: '0.4rem 0.8rem', borderRadius: '100px', backgroundColor: 'var(--color-bg-secondary)', fontSize: '0.75rem', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', cursor: 'pointer' }}
                 >
                   {s}
                 </button>
@@ -142,12 +203,14 @@ export default function AIPanel({ onClose, isModal }) {
               border: '1px solid var(--color-border)',
               borderRadius: '12px',
               fontSize: '0.9rem',
-              resize: 'none'
+              resize: 'none',
+              color: 'var(--color-text-main)',
+              outline: 'none'
             }}
           />
           <button 
             type="submit" 
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || !currentConversationId}
             style={{
               position: 'absolute',
               right: '10px',
@@ -155,7 +218,9 @@ export default function AIPanel({ onClose, isModal }) {
               padding: '0.5rem',
               borderRadius: '8px',
               backgroundColor: input.trim() ? 'var(--color-primary)' : 'transparent',
-              color: input.trim() ? 'white' : 'var(--color-text-dim)'
+              color: input.trim() ? 'white' : 'var(--color-text-dim)',
+              border: 'none',
+              cursor: 'pointer'
             }}
           >
             <Send size={18} />

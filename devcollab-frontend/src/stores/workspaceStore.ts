@@ -4,7 +4,7 @@ import * as workspaceApi from '../api/workspace';
 import * as channelApi from '../api/channel';
 import * as messageApi from '../api/message';
 
-const useWorkspaceStore = create((set, get) => ({
+const useWorkspaceStore = (create as any)((set: any, get: any) => ({
   workspaces: [],
   currentWorkspace: null,
   channels: [],

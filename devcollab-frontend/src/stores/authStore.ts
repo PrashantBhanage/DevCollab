@@ -3,9 +3,9 @@ import { persist } from 'zustand/middleware';
 import * as authApi from '../api/auth';
 import { setAccessToken, clearAuthStorage } from '../utils/authToken';
 
-const useAuthStore = create(
+const useAuthStore = (create as any)(
   persist(
-    (set) => ({
+    (set: any) => ({
       user: null,
       token: null,
       loading: false,

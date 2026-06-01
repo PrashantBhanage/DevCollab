@@ -7,8 +7,8 @@ import toast from 'react-hot-toast';
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuthStore();
-  const { workspaces, loading, fetchWorkspaces, createWorkspace, joinWorkspace } = useWorkspaceStore();
+  const { user, logout } = useAuthStore() as any;
+  const { workspaces, loading, fetchWorkspaces, createWorkspace, joinWorkspace } = useWorkspaceStore() as any;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [workspaceName, setWorkspaceName] = useState('');

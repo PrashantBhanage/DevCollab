@@ -17,9 +17,18 @@ export default function RightPanel() {
           <Sparkles size={14} color="var(--color-primary)" />
           AI Assistant
         </h3>
-        <div className="card" style={{ padding: '1rem', background: 'linear-gradient(135deg, #18181b 0%, #1e1e24 100%)' }}>
-          <p style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Ask AI to debug code, explain errors, or optimize logic.</p>
-          <button className="btn-primary w-full" style={{ fontSize: '0.85rem', padding: '0.5rem' }}>Ask Assistant</button>
+        <div style={{ padding: '1rem', background: 'linear-gradient(135deg, #18181b 0%, #1e1e24 100%)', borderRadius: '12px', border: '1px solid var(--color-border)' }}>
+          <p style={{ fontSize: '0.85rem', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>Ask AI to debug code, explain errors, or optimize logic.</p>
+          <button style={{ 
+            width: '100%', 
+            fontSize: '0.85rem', 
+            padding: '0.5rem',
+            backgroundColor: 'var(--color-primary)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer'
+          }}>Ask Assistant</button>
         </div>
       </section>
 

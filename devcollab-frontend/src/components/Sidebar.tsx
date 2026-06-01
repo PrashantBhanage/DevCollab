@@ -1,26 +1,24 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  Hash, 
-  MessageSquare, 
   Sparkles, 
   Settings, 
   Plus, 
   ChevronDown,
   LogOut
 } from 'lucide-react';
-import useWorkspaceStore from '../store/workspaceStore';
-import useAuthStore from '../store/authStore';
+import useWorkspaceStore from '../stores/workspaceStore';
+import useAuthStore from '../stores/authStore';
 
-export default function Sidebar() {
-  const { workspaces } = useWorkspaceStore();
-  const { logout } = useAuthStore();
+export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
+  const { workspaces } = useWorkspaceStore() as any;
+  const { logout } = useAuthStore() as any;
   const navigate = useNavigate();
   const location = useLocation();
 
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
-    { icon: <Sparkles size={20} />, label: 'AI Assistant', path: '/ai' },
+    { icon: <Sparkles size={20} />, label: 'AI Assistant', path: `/workspace/${workspaceId}?panel=ai` },
     { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
   ];
 
@@ -77,7 +75,7 @@ export default function Sidebar() {
             <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
           </div>
           <div className="flex-col gap-1">
-            {workspaces.map(ws => (
+            {workspaces.map((ws: any) => (
               <button 
                 key={ws.id}
                 onClick={() => navigate(`/workspace/${ws.id}`)}
@@ -85,62 +83,13 @@ export default function Sidebar() {
                 style={{
                   padding: '0.5rem 0.8rem',
                   borderRadius: '6px',
-                  color: 'var(--color-text-muted)',
+                  color: ws.id.toString() === workspaceId ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                  backgroundColor: ws.id.toString() === workspaceId ? 'var(--color-bg-secondary)' : 'transparent',
                   fontSize: '0.9rem'
                 }}
               >
                 <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--color-accent)' }}></div>
                 {ws.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Channels Mock */}
-        <div style={{ marginBottom: '2rem' }}>
-          <div className="flex items-center justify-between" style={{ padding: '0 0.8rem', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Channels</span>
-            <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
-          </div>
-          <div className="flex-col gap-1">
-            {['general', 'development', 'design', 'announcements'].map(ch => (
-              <button 
-                key={ch}
-                className="flex items-center gap-3 w-full"
-                style={{
-                  padding: '0.5rem 0.8rem',
-                  borderRadius: '6px',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '0.9rem'
-                }}
-              >
-                <Hash size={16} />
-                {ch}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* DMs Mock */}
-        <div>
-          <div className="flex items-center justify-between" style={{ padding: '0 0.8rem', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Direct Messages</span>
-            <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
-          </div>
-          <div className="flex-col gap-1">
-            {['Prashant', 'John Doe', 'AI Assistant'].map(user => (
-              <button 
-                key={user}
-                className="flex items-center gap-3 w-full"
-                style={{
-                  padding: '0.5rem 0.8rem',
-                  borderRadius: '6px',
-                  color: 'var(--color-text-muted)',
-                  fontSize: '0.9rem'
-                }}
-              >
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--color-bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{user[0]}</div>
-                {user}
               </button>
             ))}
           </div>

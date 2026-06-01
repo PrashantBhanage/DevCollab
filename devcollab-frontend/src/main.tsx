@@ -6,16 +6,16 @@ import useAuthStore from './stores/authStore'
 import { setAccessToken } from './utils/authToken'
 
 const finishAuthHydration = () => {
-  const { token } = useAuthStore.getState()
+  const { token } = (useAuthStore as any).getState()
   if (token) {
     setAccessToken(token)
   }
-  useAuthStore.setState({ _hasHydrated: true })
+  (useAuthStore as any).setState({ _hasHydrated: true })
 }
 
-useAuthStore.persist.onFinishHydration(finishAuthHydration)
+(useAuthStore as any).persist.onFinishHydration(finishAuthHydration)
 
-if (useAuthStore.persist.hasHydrated()) {
+if ((useAuthStore as any).persist.hasHydrated()) {
   finishAuthHydration()
 }
 

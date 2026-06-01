@@ -7,9 +7,9 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import WorkspacePage from './pages/WorkspacePage';
 
-function ProtectedRoute({ children }) {
-  const token = useAuthStore((state) => state.token);
-  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+function ProtectedRoute({ children }: any) {
+  const token = (useAuthStore as any)((state: any) => state.token);
+  const hasHydrated = (useAuthStore as any)((state: any) => state._hasHydrated);
 
   if (!hasHydrated) {
     return (
@@ -26,9 +26,9 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function PublicRoute({ children }) {
-  const token = useAuthStore((state) => state.token);
-  const hasHydrated = useAuthStore((state) => state._hasHydrated);
+function PublicRoute({ children }: any) {
+  const token = (useAuthStore as any)((state: any) => state.token);
+  const hasHydrated = (useAuthStore as any)((state: any) => state._hasHydrated);
 
   if (!hasHydrated) {
     return (
@@ -46,13 +46,13 @@ function PublicRoute({ children }) {
 }
 
 function App() {
-  const setHasHydrated = useAuthStore((state) => state.setHasHydrated);
+  const setHasHydrated = (useAuthStore as any)((state: any) => state.setHasHydrated);
 
   useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() => {
+    const unsub = (useAuthStore as any).persist.onFinishHydration(() => {
       setHasHydrated(true);
     });
-    if (useAuthStore.persist.hasHydrated()) {
+    if ((useAuthStore as any).persist.hasHydrated()) {
       setHasHydrated(true);
     }
     return unsub;

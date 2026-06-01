@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 
 function RegisterPage() {
   const navigate = useNavigate();
-  const { register, loading, error, clearError } = useAuthStore();
+  const { register, loading, error, clearError } = useAuthStore() as any;
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

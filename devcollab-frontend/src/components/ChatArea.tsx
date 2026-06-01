@@ -82,7 +82,7 @@ export default function ChatArea() {
               <div className="message-header">
                 <span className="message-sender">{msg.senderName || 'Unknown'}</span>
                 <span className="message-time">
-                  {new Date(msg.timestamp || msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(msg.timestamp || msg.createdAt || '2023-01-01').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
               {renderContent(msg)}

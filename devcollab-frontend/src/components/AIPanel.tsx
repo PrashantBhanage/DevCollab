@@ -17,28 +17,6 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    if (currentWorkspace?.id) {
-      loadConversations();
-    }
-  }, [currentWorkspace]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const loadConversations = async () => {
-    try {
-      const convs = await aiApi.getConversations(currentWorkspace.id);
-      setConversations(convs);
-      if (convs.length > 0 && !currentConversationId) {
-        handleSelectConversation(convs[0].id);
-      }
-    } catch (err) {
-      console.error('Failed to load AI conversations');
-    }
-  };
-
   const handleSelectConversation = async (id: number) => {
     setCurrentConversationId(id);
     setLoading(true);
@@ -65,6 +43,28 @@ export default function AIPanel({ onClose, isModal }: { onClose: () => void, isM
       toast.error('Failed to create conversation');
     }
   };
+
+  useEffect(() => {
+    const loadConversations = async () => {
+      try {
+        const convs = await aiApi.getConversations(currentWorkspace.id);
+        setConversations(convs);
+        if (convs.length > 0 && !currentConversationId) {
+          handleSelectConversation(convs[0].id);
+        }
+      } catch (err) {
+        console.error('Failed to load AI conversations');
+      }
+    };
+
+    if (currentWorkspace?.id) {
+      loadConversations();
+    }
+  }, [currentWorkspace?.id, currentConversationId]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();

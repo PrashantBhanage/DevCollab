@@ -11,7 +11,7 @@ import useWorkspaceStore from '../stores/workspaceStore';
 import useAuthStore from '../stores/authStore';
 
 export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
-  const { workspaces } = useWorkspaceStore() as any;
+  const { channels, currentChannel, addChannel, setCurrentChannel } = useWorkspaceStore() as any;
   const { logout } = useAuthStore() as any;
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,23 +56,26 @@ export default function Sidebar({ workspaceId }: { workspaceId?: string }) {
           })}
         </div>
 
-        {/* Workspaces Section */}
+        {/* Channels Section */}
         <div className="nav-section">
           <div className="flex items-center justify-between" style={{ paddingRight: '2rem' }}>
-            <h3 className="nav-section-title">Workspaces</h3>
-            <button className="btn-icon" onClick={() => navigate('/dashboard')}><Plus size={16} strokeWidth={1.5} /></button>
+            <h3 className="nav-section-title">Channels</h3>
+            <button className="btn-icon" onClick={() => {
+              const name = window.prompt('Channel name:');
+              if (name) addChannel(name);
+            }}><Plus size={16} strokeWidth={1.5} /></button>
           </div>
           <div className="flex-col">
-            {workspaces.map((ws: any) => {
-              const isActive = ws.id.toString() === workspaceId;
+            {channels?.map((channel: any) => {
+              const isActive = channel.id === currentChannel;
               return (
                 <button 
-                  key={ws.id}
-                  onClick={() => navigate(`/workspace/${ws.id}`)}
+                  key={channel.id}
+                  onClick={() => setCurrentChannel(channel.id)}
                   className={`nav-item ${isActive ? 'active' : ''}`}
                 >
                   <span className="channel-icon label-mono" style={{ color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)', fontSize: '1rem', width: '20px', textAlign: 'left' }}>#</span>
-                  {ws.name}
+                  {channel.name}
                 </button>
               );
             })}

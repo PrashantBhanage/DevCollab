@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import useWorkspaceStore from '../store/workspaceStore';
-import { Send, Code } from 'lucide-react';
+import { Send, Code, Hash } from 'lucide-react';
 import { createMessage } from '../api/message';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -136,6 +136,13 @@ export default function ChatArea() {
             style={{ backgroundColor: newMessage.trim() ? 'var(--color-primary)' : 'transparent', color: newMessage.trim() ? 'white' : 'var(--color-text-muted)', alignSelf: 'center' }}
           >
             <Send size={18} />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+   <Send size={18} />
           </button>
         </form>
       </div>

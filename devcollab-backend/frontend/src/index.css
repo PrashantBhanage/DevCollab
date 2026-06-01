@@ -1,14 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --color-primary: #534AB7;
-  --color-primary-hover: #423b93;
-  --color-bg-body: #f7f6f5; /* warm gray */
-  --color-bg-surface: #ffffff;
-  --color-bg-secondary: #f0eeec;
-  --color-text-main: #2b2b2b;
-  --color-text-muted: #6b6b6b;
-  --color-border: #e2dfdc;
+  --color-primary: #5c5edc;
+  --color-primary-hover: #4e50c7;
+  --color-bg-body: #0a0a0c;
+  --color-bg-sidebar: #121214;
+  --color-bg-surface: #18181b;
+  --color-bg-secondary: #27272a;
+  --color-text-main: #f4f4f5;
+  --color-text-muted: #a1a1aa;
+  --color-text-dim: #71717a;
+  --color-border: #27272a;
+  --color-accent: #22c55e;
+  
+  --sidebar-width: 260px;
+  --right-panel-width: 300px;
+  --topbar-height: 60px;
   
   --font-family: 'Inter', system-ui, sans-serif;
 }
@@ -24,6 +31,7 @@ body {
   background-color: var(--color-bg-body);
   color: var(--color-text-main);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 a {
@@ -31,43 +39,36 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
 button {
   font-family: var(--font-family);
   cursor: pointer;
   border: none;
   background: none;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: all 0.2s ease;
+  color: inherit;
 }
 
-/* Base Form Elements */
 input, textarea {
   font-family: var(--font-family);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  padding: 0.75rem 1rem;
-  background-color: var(--color-bg-surface);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  background-color: var(--color-bg-secondary);
   color: var(--color-text-main);
   font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.15s ease;
 }
 
-input:focus, textarea:focus {
+input:focus {
   border-color: var(--color-primary);
 }
 
-/* Minimal Flat Buttons (No shadow) */
 .btn-primary {
   background-color: var(--color-primary);
   color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   font-weight: 500;
-  font-size: 0.95rem;
 }
 
 .btn-primary:hover {
@@ -77,39 +78,49 @@ input:focus, textarea:focus {
 .btn-secondary {
   background-color: var(--color-bg-secondary);
   color: var(--color-text-main);
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
   font-weight: 500;
-  font-size: 0.95rem;
 }
 
 .btn-secondary:hover {
   background-color: var(--color-border);
 }
 
-.btn-icon {
-  padding: 0.5rem;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-muted);
-}
-
-.btn-icon:hover {
-  background-color: var(--color-bg-secondary);
-  color: var(--color-text-main);
-}
-
-/* Card Surface */
 .card {
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.content-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
   padding: 2rem;
 }
 
-/* Layout Utilities */
+/* Utilities */
 .flex { display: flex; }
 .flex-col { display: flex; flex-direction: column; }
 .items-center { align-items: center; }
@@ -118,21 +129,19 @@ input:focus, textarea:focus {
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
 .w-full { width: 100%; }
-.h-screen { height: 100vh; }
-.min-h-screen { min-height: 100vh; }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 4px;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-muted);
+  background: var(--color-text-dim);
 }

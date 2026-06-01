@@ -1,134 +1,168 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Hash, Plus, CheckSquare, Bot, ArrowLeft } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  Hash, 
+  MessageSquare, 
+  Sparkles, 
+  Settings, 
+  Plus, 
+  ChevronDown,
+  LogOut
+} from 'lucide-react';
 import useWorkspaceStore from '../store/workspaceStore';
 import useAuthStore from '../store/authStore';
-import { createChannel } from '../api/channel';
-import toast from 'react-hot-toast';
 
-export default function Sidebar({ workspaceId, onToggleAI, isAIOpen }) {
-  const { currentWorkspace, channels, currentChannel, setCurrentChannel, fetchChannels } = useWorkspaceStore();
-  const { user } = useAuthStore();
+export default function Sidebar() {
+  const { workspaces } = useWorkspaceStore();
+  const { logout } = useAuthStore();
   const navigate = useNavigate();
-  
-  const [isCreatingChannel, setIsCreatingChannel] = useState(false);
-  const [newChannelName, setNewChannelName] = useState('');
+  const location = useLocation();
 
-  const handleCreateChannel = async (e) => {
-    e.preventDefault();
-    if (!newChannelName.trim()) return;
-    try {
-      await createChannel(workspaceId, { name: newChannelName });
-      setNewChannelName('');
-      setIsCreatingChannel(false);
-      fetchChannels(workspaceId);
-    } catch (err) {
-      toast.error('Failed to create channel');
-    }
-  };
+  const menuItems = [
+    { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/dashboard' },
+    { icon: <Sparkles size={20} />, label: 'AI Assistant', path: '/ai' },
+    { icon: <Settings size={20} />, label: 'Settings', path: '/settings' },
+  ];
 
   return (
-    <div className="h-screen flex-col" style={{ width: '260px', backgroundColor: 'var(--color-bg-body)' }}>
-      {/* Header */}
-      <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <button onClick={() => navigate('/dashboard')} className="btn-icon" style={{ padding: '4px' }}>
-          <ArrowLeft size={18} />
+    <div style={{
+      width: 'var(--sidebar-width)',
+      backgroundColor: 'var(--color-bg-sidebar)',
+      borderRight: '1px solid var(--color-border)',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh'
+    }}>
+      {/* Logo & Workspace Switcher */}
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--color-border)' }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
+          <div className="flex items-center gap-2">
+            <div style={{ width: '28px', height: '28px', borderRadius: '6px', backgroundColor: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>D</div>
+            <span style={{ fontWeight: '700', fontSize: '1.1rem', letterSpacing: '-0.02em' }}>DevCollab</span>
+          </div>
+        </div>
+        <button className="flex items-center justify-between w-full" style={{ padding: '0.5rem', borderRadius: '6px', backgroundColor: 'var(--color-bg-secondary)', fontSize: '0.9rem' }}>
+          <span style={{ fontWeight: '500' }}>Select Workspace</span>
+          <ChevronDown size={16} color="var(--color-text-dim)" />
         </button>
-        <h2 style={{ fontWeight: '600', fontSize: '1.1rem', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {currentWorkspace?.name}
-        </h2>
       </div>
 
-      {/* Main Scrollable Content */}
-      <div className="flex-col flex-1" style={{ padding: '1rem', overflowY: 'auto', gap: '1.5rem' }}>
-        
-        {/* Channels */}
-        <div className="flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Channels</span>
-            <button onClick={() => setIsCreatingChannel(true)} className="btn-icon" style={{ padding: '2px' }}><Plus size={16} /></button>
-          </div>
-          
-          {isCreatingChannel && (
-            <form onSubmit={handleCreateChannel} className="flex gap-2" style={{ marginBottom: '0.5rem' }}>
-              <input 
-                autoFocus
-                value={newChannelName} 
-                onChange={(e) => setNewChannelName(e.target.value)}
-                placeholder="channel-name" 
-                style={{ padding: '0.4rem', fontSize: '0.85rem', width: '100%' }}
-                onBlur={() => setIsCreatingChannel(false)}
-              />
-            </form>
-          )}
+      {/* Main Navigation */}
+      <div style={{ flex: 1, padding: '1rem', overflowY: 'auto' }}>
+        <div className="flex-col gap-1" style={{ marginBottom: '2rem' }}>
+          {menuItems.map(item => (
+            <button 
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="flex items-center gap-3 w-full"
+              style={{
+                padding: '0.6rem 0.8rem',
+                borderRadius: '6px',
+                color: location.pathname === item.path ? 'var(--color-text-main)' : 'var(--color-text-muted)',
+                backgroundColor: location.pathname === item.path ? 'var(--color-bg-secondary)' : 'transparent',
+                fontSize: '0.9rem',
+                fontWeight: location.pathname === item.path ? '500' : '400'
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
 
+        {/* Workspaces Section */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div className="flex items-center justify-between" style={{ padding: '0 0.8rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Workspaces</span>
+            <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
+          </div>
           <div className="flex-col gap-1">
-            {channels.map(channel => (
+            {workspaces.map(ws => (
               <button 
-                key={channel.id}
-                onClick={() => setCurrentChannel(channel)}
+                key={ws.id}
+                onClick={() => navigate(`/workspace/${ws.id}`)}
+                className="flex items-center gap-3 w-full"
                 style={{
-                  display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.4rem 0.5rem',
-                  borderRadius: '4px', textAlign: 'left',
-                  backgroundColor: currentChannel?.id === channel.id ? 'var(--color-bg-surface)' : 'transparent',
-                  color: currentChannel?.id === channel.id ? 'var(--color-text-main)' : 'var(--color-text-muted)',
-                  fontWeight: currentChannel?.id === channel.id ? '500' : '400',
-                  boxShadow: currentChannel?.id === channel.id ? '0 1px 2px rgba(0,0,0,0.02)' : 'none'
+                  padding: '0.5rem 0.8rem',
+                  borderRadius: '6px',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '0.9rem'
                 }}
               >
-                <Hash size={16} />
-                {channel.name}
+                <div style={{ width: '8px', height: '8px', borderRadius: '2px', backgroundColor: 'var(--color-accent)' }}></div>
+                {ws.name}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Apps / Integrations */}
-        <div className="flex-col gap-2">
-          <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Apps</span>
-          <button style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.4rem 0.5rem',
-            borderRadius: '4px', textAlign: 'left', color: 'var(--color-text-muted)'
-          }}>
-            <CheckSquare size={16} />
-            Task Board
-          </button>
-          <button 
-            onClick={onToggleAI}
-            style={{
-            display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.4rem 0.5rem',
-            borderRadius: '4px', textAlign: 'left',
-            backgroundColor: isAIOpen ? 'var(--color-bg-surface)' : 'transparent',
-            color: isAIOpen ? 'var(--color-primary)' : 'var(--color-text-muted)',
-            fontWeight: isAIOpen ? '500' : '400'
-          }}>
-            <Bot size={16} />
-            AI Assistant
-          </button>
+        {/* Channels Mock */}
+        <div style={{ marginBottom: '2rem' }}>
+          <div className="flex items-center justify-between" style={{ padding: '0 0.8rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Channels</span>
+            <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
+          </div>
+          <div className="flex-col gap-1">
+            {['general', 'development', 'design', 'announcements'].map(ch => (
+              <button 
+                key={ch}
+                className="flex items-center gap-3 w-full"
+                style={{
+                  padding: '0.5rem 0.8rem',
+                  borderRadius: '6px',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <Hash size={16} />
+                {ch}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Members */}
-        <div className="flex-col gap-2">
-          <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Members</span>
-          {/* Real members list would be mapped here, using placeholder for now but matching style */}
-          <div className="flex items-center gap-2" style={{ padding: '0.4rem 0.5rem', color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>
-             <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }}></div>
-             {user?.username || 'You'}
+        {/* DMs Mock */}
+        <div>
+          <div className="flex items-center justify-between" style={{ padding: '0 0.8rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Direct Messages</span>
+            <button style={{ color: 'var(--color-text-dim)' }}><Plus size={14} /></button>
+          </div>
+          <div className="flex-col gap-1">
+            {['Prashant', 'John Doe', 'AI Assistant'].map(user => (
+              <button 
+                key={user}
+                className="flex items-center gap-3 w-full"
+                style={{
+                  padding: '0.5rem 0.8rem',
+                  borderRadius: '6px',
+                  color: 'var(--color-text-muted)',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--color-bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem' }}>{user[0]}</div>
+                {user}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Current User Bottom Profile */}
-      <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg-surface)' }}>
-        <div className="flex items-center gap-3">
-          <div style={{ width: '32px', height: '32px', borderRadius: '4px', backgroundColor: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600', fontSize: '0.9rem' }}>
-            {user?.username?.[0]?.toUpperCase() || 'U'}
-          </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: '0.9rem', fontWeight: '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{user?.username}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Online</div>
-          </div>
-        </div>
+      {/* User Footer */}
+      <div style={{ padding: '1rem', borderTop: '1px solid var(--color-border)' }}>
+        <button 
+          onClick={() => { logout(); navigate('/'); }}
+          className="flex items-center gap-3 w-full"
+          style={{
+            padding: '0.6rem 0.8rem',
+            borderRadius: '6px',
+            color: '#ef4444',
+            fontSize: '0.9rem',
+            fontWeight: '500'
+          }}
+        >
+          <LogOut size={18} />
+          Sign Out
+        </button>
       </div>
     </div>
   );

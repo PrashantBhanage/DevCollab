@@ -16,8 +16,7 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await register({ username: name, email, password }); // Assuming backend expects 'username' or 'name'. Backend AuthRequest model expects username. Let's use username for backend mapping.
-      await login({ email, password });
+      await register({ name, email, password });
       toast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error) {

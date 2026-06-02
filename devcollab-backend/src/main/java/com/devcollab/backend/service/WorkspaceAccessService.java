@@ -1,5 +1,6 @@
 package com.devcollab.backend.service;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +32,7 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
+	@NonNull
 	public User getCurrentUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null || authentication.getName() == null || "anonymousUser".equals(authentication.getName())) {
@@ -42,27 +44,29 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceMember(Long workspaceId) {
+	@NonNull
+	public Workspace requireWorkspaceMember(@NonNull Long workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
 		Long userId = getCurrentUser().getId();
-		if (belongsToWorkspace(workspace, userId)) {
+		if (userId != null && belongsToWorkspace(workspace, userId)) {
 			return workspace;
 		}
 		throw new AccessDeniedException("You do not have access to this workspace");
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace requireWorkspaceOwner(Long workspaceId) {
+	@NonNull
+	public Workspace requireWorkspaceOwner(@NonNull Long workspaceId) {
 		Workspace workspace = getWorkspace(workspaceId);
 		Long userId = getCurrentUser().getId();
-		if (workspace.getOwnerId().equals(userId)) {
+		if (userId != null && userId.equals(workspace.getOwnerId())) {
 			return workspace;
 		}
 		throw new AccessDeniedException("Only the workspace owner can perform this action");
 	}
 
 	@Transactional(readOnly = true)
-	public void ensureWorkspaceParticipant(Long workspaceId, Long userId) {
+	public void ensureWorkspaceParticipant(@NonNull Long workspaceId, Long userId) {
 		if (userId == null) {
 			return;
 		}
@@ -77,13 +81,14 @@ public class WorkspaceAccessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Workspace getWorkspace(Long workspaceId) {
+	@NonNull
+	public Workspace getWorkspace(@NonNull Long workspaceId) {
 		return workspaceRepository.findById(workspaceId)
 			.orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 	}
 
-	private boolean belongsToWorkspace(Workspace workspace, Long userId) {
-		if (workspace.getOwnerId().equals(userId)) {
+	private boolean belongsToWorkspace(@NonNull Workspace workspace, @NonNull Long userId) {
+		if (userId.equals(workspace.getOwnerId())) {
 			return true;
 		}
 		return workspaceMemberRepository.findByWorkspaceIdAndUserId(workspace.getId(), userId).isPresent();

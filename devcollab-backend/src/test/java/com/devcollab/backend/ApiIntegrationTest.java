@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -229,20 +230,32 @@ class ApiIntegrationTest {
 		workspace.setName("Shared Workspace");
 		workspace.setDescription("Workspace available for join testing");
 		workspace.setInviteCode("JOINTEST");
-		workspace.setOwnerId(savedOwner.getId());
-		return workspaceRepository.save(workspace).getInviteCode();
+		workspace.setOwnerId(Objects.requireNonNull(savedOwner.getId(), "Owner ID must not be null"));
+		return Objects.requireNonNull(workspaceRepository.save(workspace).getInviteCode(), "Invite code must not be null");
 	}
 
 	private Long readLong(MvcResult result, String fieldName) throws Exception {
-		return readJson(result).get(fieldName).asLong();
+		JsonNode node = readJson(result).get(fieldName);
+		if (node == null || node.isNull()) {
+			throw new IllegalStateException("Field " + fieldName + " is null");
+		}
+		return node.asLong();
 	}
 
 	private String readString(MvcResult result, String fieldName) throws Exception {
-		return readJson(result).get(fieldName).asText();
+		JsonNode node = readJson(result).get(fieldName);
+		if (node == null || node.isNull()) {
+			throw new IllegalStateException("Field " + fieldName + " is null");
+		}
+		return node.asText();
 	}
 
 	private JsonNode readJson(MvcResult result) throws Exception {
-		return objectMapper.readTree(result.getResponse().getContentAsString());
+		String content = result.getResponse().getContentAsString(StandardCharsets.UTF_8);
+		if (content == null || content.isBlank()) {
+			throw new IllegalStateException("Response content is empty");
+		}
+		return objectMapper.readTree(content);
 	}
 
 	private static synchronized void startGeminiStubServer() {

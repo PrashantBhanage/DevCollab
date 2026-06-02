@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.springframework.lang.NonNull;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -40,8 +41,8 @@ public class ChatController {
 
         @MessageMapping("/channel/{channelId}/send")
         public void sendMessage(
-                @DestinationVariable Long channelId,
-                @Payload ChatMessage payload,
+                @DestinationVariable("channelId") @NonNull Long channelId,
+                @Payload @NonNull ChatMessage payload,
                 Principal principal
         ) {
                 User user = resolveUser(principal, payload);
@@ -69,8 +70,8 @@ public class ChatController {
 
         @MessageMapping("/channel/{channelId}/typing")
         public void typing(
-                @DestinationVariable Long channelId,
-                @Payload ChatMessage payload,
+                @DestinationVariable("channelId") @NonNull Long channelId,
+                @Payload @NonNull ChatMessage payload,
                 Principal principal
         ) {
                 User user = resolveUser(principal, payload);
@@ -88,6 +89,7 @@ public class ChatController {
                 simpMessagingTemplate.convertAndSend("/topic/channel/" + channelId + "/typing", response);
         }
 
+        @NonNull
         private User resolveUser(Principal principal, ChatMessage payload) {
                 if (principal != null && principal.getName() != null && !principal.getName().isBlank()) {
                         return userRepository.findByEmail(principal.getName())

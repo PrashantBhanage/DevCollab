@@ -1,6 +1,6 @@
 package com.devcollab.backend.config;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.Message;
@@ -48,8 +48,11 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
 			accessor.setUser(authentication);
 			User user = userRepository.findByEmail(authentication.getName())
 				.orElseThrow(() -> new IllegalArgumentException("User not found"));
-			accessor.getSessionAttributes().put("userId", user.getId());
-			accessor.getSessionAttributes().put("username", user.getEmail());
+			Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+			if (sessionAttributes != null) {
+				sessionAttributes.put("userId", user.getId());
+				sessionAttributes.put("username", user.getEmail());
+			}
 		}
 		else if (accessor.getUser() == null && accessor.getSessionAttributes() != null) {
 			Object username = accessor.getSessionAttributes().get("username");

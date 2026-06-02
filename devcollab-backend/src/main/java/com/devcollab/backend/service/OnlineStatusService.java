@@ -3,6 +3,7 @@ package com.devcollab.backend.service;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,11 @@ public class OnlineStatusService {
 		}
 
 		sessionUsers.put(sessionId, userId);
-		onlineUsers.merge(userId, 1, Integer::sum);
+		onlineUsers.merge(userId, 1, (oldValue, newValue) -> {
+			int oldVal = oldValue != null ? oldValue : 0;
+			int newVal = newValue != null ? newValue : 0;
+			return oldVal + newVal;
+		});
 	}
 
 	public Long setUserOffline(String sessionId) {
@@ -30,10 +35,11 @@ public class OnlineStatusService {
 			return null;
 		}
 
-		onlineUsers.computeIfPresent(userId, (key, count) -> count > 1 ? count - 1 : null);
+		onlineUsers.computeIfPresent(userId, (key, count) -> (count != null && count > 1) ? count - 1 : null);
 		return userId;
 	}
 
+	@NonNull
 	public Set<Long> getAllOnlineUsers() {
 		return Set.copyOf(onlineUsers.keySet());
 	}

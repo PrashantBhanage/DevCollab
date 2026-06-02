@@ -1,5 +1,6 @@
 package com.devcollab.backend.service;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -37,7 +38,11 @@ public class AuthService {
                 this.workspaceAccessService = workspaceAccessService;
         }
 
-        public AuthResponse register(RegisterRequest request) {
+        @NonNull
+        public AuthResponse register(@NonNull RegisterRequest request) {
+                if (request.getEmail() == null || request.getName() == null || request.getPassword() == null) {
+                        throw new IllegalArgumentException("Registration fields cannot be null");
+                }
                 String email = request.getEmail().trim().toLowerCase();
                 if (userRepository.existsByEmail(email)) {
                         throw new IllegalArgumentException("Email is already registered");
@@ -54,12 +59,17 @@ public class AuthService {
                 return buildResponse(savedUser, token);
         }
 
+        @NonNull
         public AuthResponse getCurrentUser() {
                 User user = workspaceAccessService.getCurrentUser();
                 return buildResponse(user, null);
         }
 
-        public AuthResponse login(LoginRequest request) {
+        @NonNull
+        public AuthResponse login(@NonNull LoginRequest request) {
+                if (request.getEmail() == null || request.getPassword() == null) {
+                        throw new IllegalArgumentException("Login fields cannot be null");
+                }
                 Authentication authentication = authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(request.getEmail().trim().toLowerCase(), request.getPassword())
                 );
@@ -71,7 +81,8 @@ public class AuthService {
                 return buildResponse(user, token);
         }
 
-        private AuthResponse buildResponse(User user, String token) {
+        @NonNull
+        private AuthResponse buildResponse(@NonNull User user, String token) {
                 return new AuthResponse(token, token != null ? "Bearer" : null, user.getId(), user.getName(), user.getEmail());
         }
 }

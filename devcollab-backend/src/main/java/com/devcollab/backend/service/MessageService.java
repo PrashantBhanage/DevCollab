@@ -2,6 +2,7 @@ package com.devcollab.backend.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,11 @@ public class MessageService {
         }
 
         @Transactional
-        public MessageResponse saveMessage(Long channelId, CreateMessageRequest request) {
+        @NonNull
+        public MessageResponse saveMessage(@NonNull Long channelId, @NonNull CreateMessageRequest request) {
+                if (request.content() == null || request.content().isBlank()) {
+                        throw new IllegalArgumentException("Message content cannot be empty");
+                }
                 Channel channel = getChannel(channelId);
                 workspaceAccessService.requireWorkspaceMember(channel.getWorkspaceId());
                 User currentUser = workspaceAccessService.getCurrentUser();
@@ -53,22 +58,28 @@ public class MessageService {
         }
 
         @Transactional(readOnly = true)
-        public Page<MessageResponse> getMessagesByChannel(Long channelId, int page, int size) {
+        @NonNull
+        public Page<MessageResponse> getMessagesByChannel(@NonNull Long channelId, int page, int size) {
                 Channel channel = getChannel(channelId);
                 workspaceAccessService.requireWorkspaceMember(channel.getWorkspaceId());
                 return messageRepository.findByChannelIdOrderByCreatedAtAsc(channelId, PageRequest.of(page, size))
                         .map(this::toResponse);
         }
 
-        private Channel getChannel(Long channelId) {
+        @NonNull
+        private Channel getChannel(@NonNull Long channelId) {
                 return channelRepository.findById(channelId)
                         .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
         }
 
-        private MessageResponse toResponse(Message message) {
-                String senderName = userRepository.findById(message.getSenderId())
-                        .map(User::getName)
-                        .orElse("Unknown User");
+        @NonNull
+        private MessageResponse toResponse(@NonNull Message message) {
+                String senderName = "Unknown User";
+                if (message.getSenderId() != null) {
+                        senderName = userRepository.findById(message.getSenderId())
+                                .map(User::getName)
+                                .orElse("Unknown User");
+                }
 
                 return new MessageResponse(
                         message.getId(),

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +43,11 @@ public class WorkspaceService {
         }
 
         @Transactional
-        public WorkspaceResponse createWorkspace(CreateWorkspaceRequest request) {
+        @NonNull
+        public WorkspaceResponse createWorkspace(@NonNull CreateWorkspaceRequest request) {
+                if (request.name() == null || request.name().isBlank()) {
+                        throw new IllegalArgumentException("Workspace name cannot be empty");
+                }
                 User currentUser = workspaceAccessService.getCurrentUser();
 
                 Workspace workspace = Workspace.builder()
@@ -56,6 +61,7 @@ public class WorkspaceService {
         }
 
         @Transactional(readOnly = true)
+        @NonNull
         public List<WorkspaceResponse> getWorkspaces() {
                 User currentUser = workspaceAccessService.getCurrentUser();
                 Map<Long, WorkspaceResponse> workspaces = new LinkedHashMap<>();
@@ -65,10 +71,9 @@ public class WorkspaceService {
                 }
 
                 for (WorkspaceMember member : workspaceMemberRepository.findByUserId(currentUser.getId())) {
-                        Workspace workspace = workspaceRepository.findById(member.getWorkspaceId()).orElse(null);
-                        if (workspace != null) {
-                                workspaces.putIfAbsent(workspace.getId(), toResponse(workspace, member.getRole().name()));
-                        }
+                        workspaceRepository.findById(member.getWorkspaceId()).ifPresent(workspace -> 
+                                workspaces.putIfAbsent(workspace.getId(), toResponse(workspace, member.getRole().name()))
+                        );
                 }
 
                 return workspaces.values().stream()
@@ -77,7 +82,8 @@ public class WorkspaceService {
         }
 
         @Transactional(readOnly = true)
-        public WorkspaceResponse getWorkspaceById(Long workspaceId) {
+        @NonNull
+        public WorkspaceResponse getWorkspaceById(@NonNull Long workspaceId) {
                 Workspace workspace = workspaceAccessService.requireWorkspaceMember(workspaceId);
                 User currentUser = workspaceAccessService.getCurrentUser();
                 String role = workspace.getOwnerId().equals(currentUser.getId())
@@ -89,7 +95,8 @@ public class WorkspaceService {
         }
 
         @Transactional(readOnly = true)
-        public List<WorkspaceMemberResponse> getWorkspaceMembers(Long workspaceId) {
+        @NonNull
+        public List<WorkspaceMemberResponse> getWorkspaceMembers(@NonNull Long workspaceId) {
                 Workspace workspace = workspaceAccessService.requireWorkspaceMember(workspaceId);
                 List<WorkspaceMemberResponse> members = new java.util.ArrayList<>();
 
@@ -122,7 +129,11 @@ public class WorkspaceService {
         }
 
         @Transactional
-        public WorkspaceResponse joinWorkspace(JoinWorkspaceRequest request) {
+        @NonNull
+        public WorkspaceResponse joinWorkspace(@NonNull JoinWorkspaceRequest request) {
+                if (request.inviteCode() == null || request.inviteCode().isBlank()) {
+                        throw new IllegalArgumentException("Invite code cannot be empty");
+                }
                 String code = request.inviteCode().trim();
                 Workspace workspace = workspaceRepository.findByInviteCode(code)
                         .orElseThrow(() -> new ResourceNotFoundException("Invalid invite code"));
@@ -145,7 +156,8 @@ public class WorkspaceService {
                 return toResponse(workspace, member.getRole().name());
         }
 
-        private WorkspaceResponse toResponse(Workspace workspace, String role) {
+        @NonNull
+        private WorkspaceResponse toResponse(@NonNull Workspace workspace, @NonNull String role) {
                 return new WorkspaceResponse(
                         workspace.getId(),
                         workspace.getName(),
@@ -157,6 +169,7 @@ public class WorkspaceService {
                 );
         }
 
+        @NonNull
         private String generateInviteCode() {
                 return UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         }

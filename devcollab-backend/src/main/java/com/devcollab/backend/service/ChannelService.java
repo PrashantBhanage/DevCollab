@@ -2,6 +2,7 @@ package com.devcollab.backend.service;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +32,11 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public ChannelResponse createChannel(Long workspaceId, CreateChannelRequest request) {
+	@NonNull
+	public ChannelResponse createChannel(@NonNull Long workspaceId, @NonNull CreateChannelRequest request) {
+		if (request.name() == null || request.name().isBlank()) {
+			throw new IllegalArgumentException("Channel name cannot be empty");
+		}
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		User currentUser = workspaceAccessService.getCurrentUser();
 
@@ -45,7 +50,8 @@ public class ChannelService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ChannelResponse> getChannelsByWorkspace(Long workspaceId) {
+	@NonNull
+	public List<ChannelResponse> getChannelsByWorkspace(@NonNull Long workspaceId) {
 		workspaceAccessService.requireWorkspaceMember(workspaceId);
 		return channelRepository.findByWorkspaceIdOrderByCreatedAtAsc(workspaceId)
 			.stream()
@@ -54,7 +60,7 @@ public class ChannelService {
 	}
 
 	@Transactional
-	public void deleteChannel(Long channelId) {
+	public void deleteChannel(@NonNull Long channelId) {
 		Channel channel = channelRepository.findById(channelId)
 			.orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 		workspaceAccessService.requireWorkspaceOwner(channel.getWorkspaceId());
@@ -62,7 +68,8 @@ public class ChannelService {
 		channelRepository.delete(channel);
 	}
 
-	private ChannelResponse toResponse(Channel channel) {
+	@NonNull
+	private ChannelResponse toResponse(@NonNull Channel channel) {
 		return new ChannelResponse(
 			channel.getId(),
 			channel.getName(),

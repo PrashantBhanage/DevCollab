@@ -28,11 +28,12 @@ public class WebSocketEventListener {
 	@EventListener
 	public void handleSessionConnect(SessionConnectEvent event) {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-		if (accessor.getSessionAttributes() == null) {
+		java.util.Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
+		if (sessionAttributes == null) {
 			return;
 		}
 
-		Object userIdValue = accessor.getSessionAttributes().get("userId");
+		Object userIdValue = sessionAttributes.get("userId");
 		if (!(userIdValue instanceof Long userId)) {
 			return;
 		}

@@ -2,6 +2,7 @@ package com.devcollab.backend.service;
 
 import java.util.List;
 
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +10,6 @@ import com.devcollab.backend.dto.TaskRequest;
 import com.devcollab.backend.dto.TaskResponse;
 import com.devcollab.backend.exception.ResourceNotFoundException;
 import com.devcollab.backend.model.Task;
-import com.devcollab.backend.model.User;
 import com.devcollab.backend.repository.TaskRepository;
 
 @Service
@@ -24,7 +24,11 @@ public class TaskService {
         }
 
         @Transactional
-        public TaskResponse createTask(Long workspaceId, TaskRequest request) {
+        @NonNull
+        public TaskResponse createTask(@NonNull Long workspaceId, @NonNull TaskRequest request) {
+                if (request.title() == null || request.title().isBlank()) {
+                        throw new IllegalArgumentException("Task title cannot be empty");
+                }
                 workspaceAccessService.requireWorkspaceMember(workspaceId);
                 workspaceAccessService.ensureWorkspaceParticipant(workspaceId, request.assignedTo());
 
@@ -41,7 +45,8 @@ public class TaskService {
         }
 
         @Transactional(readOnly = true)
-        public List<TaskResponse> getTasksByWorkspace(Long workspaceId, Task.Status status) {
+        @NonNull
+        public List<TaskResponse> getTasksByWorkspace(@NonNull Long workspaceId, Task.Status status) {
                 workspaceAccessService.requireWorkspaceMember(workspaceId);
                 List<Task> tasks = status == null
                         ? taskRepository.findByWorkspaceIdOrderByCreatedAtDesc(workspaceId)
@@ -53,7 +58,11 @@ public class TaskService {
         }
 
         @Transactional
-        public TaskResponse updateTask(Long taskId, TaskRequest request) {
+        @NonNull
+        public TaskResponse updateTask(@NonNull Long taskId, @NonNull TaskRequest request) {
+                if (request.title() == null || request.title().isBlank()) {
+                        throw new IllegalArgumentException("Task title cannot be empty");
+                }
                 Task task = getTask(taskId);
                 workspaceAccessService.requireWorkspaceMember(task.getWorkspaceId());
                 workspaceAccessService.ensureWorkspaceParticipant(task.getWorkspaceId(), request.assignedTo());
@@ -70,18 +79,20 @@ public class TaskService {
         }
 
         @Transactional
-        public void deleteTask(Long taskId) {
+        public void deleteTask(@NonNull Long taskId) {
                 Task task = getTask(taskId);
                 workspaceAccessService.requireWorkspaceOwner(task.getWorkspaceId());
                 taskRepository.delete(task);
         }
 
-        private Task getTask(Long taskId) {
+        @NonNull
+        private Task getTask(@NonNull Long taskId) {
                 return taskRepository.findById(taskId)
                         .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         }
 
-        private TaskResponse toResponse(Task task) {
+        @NonNull
+        private TaskResponse toResponse(@NonNull Task task) {
                 return new TaskResponse(
                         task.getId(),
                         task.getTitle(),

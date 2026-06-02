@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+import org.springframework.lang.NonNull;
 
 import com.devcollab.backend.dto.AiConversationResponse;
 import com.devcollab.backend.dto.AiMessageResponse;
@@ -52,7 +53,11 @@ public class AiService {
         }
 
         @Transactional
-        public AiConversationResponse createConversation(CreateAiConversationRequest request) {
+        @NonNull
+        public AiConversationResponse createConversation(@NonNull CreateAiConversationRequest request) {
+                if (request.workspaceId() == null) {
+                        throw new IllegalArgumentException("Workspace ID is required");
+                }
                 workspaceAccessService.requireWorkspaceMember(request.workspaceId());
                 User currentUser = workspaceAccessService.getCurrentUser();
 
@@ -66,7 +71,11 @@ public class AiService {
         }
 
         @Transactional
-        public AiMessageResponse sendMessage(Long conversationId, SendAiMessageRequest request) {
+        @NonNull
+        public AiMessageResponse sendMessage(@NonNull Long conversationId, @NonNull SendAiMessageRequest request) {
+                if (request.content() == null || request.content().isBlank()) {
+                        throw new IllegalArgumentException("Message content cannot be empty");
+                }
                 AiConversation conversation = getConversationForCurrentUser(conversationId);
 
                 AiMessage userMessage = AiMessage.builder()
@@ -89,7 +98,8 @@ public class AiService {
         }
 
         @Transactional(readOnly = true)
-        public List<AiMessageResponse> getMessages(Long conversationId) {
+        @NonNull
+        public List<AiMessageResponse> getMessages(@NonNull Long conversationId) {
                 AiConversation conversation = getConversationForCurrentUser(conversationId);
                 return aiMessageRepository.findByConversationIdOrderByCreatedAtAsc(conversation.getId())
                         .stream()
@@ -98,6 +108,7 @@ public class AiService {
         }
 
         @Transactional(readOnly = true)
+        @NonNull
         public List<AiConversationResponse> getConversations(Long workspaceId) {
                 User currentUser = workspaceAccessService.getCurrentUser();
                 if (workspaceId != null) {
@@ -114,7 +125,8 @@ public class AiService {
                         .toList();
         }
 
-        private AiConversation getConversationForCurrentUser(Long conversationId) {
+        @NonNull
+        private AiConversation getConversationForCurrentUser(@NonNull Long conversationId) {
                 AiConversation conversation = aiConversationRepository.findById(conversationId)
                         .orElseThrow(() -> new ResourceNotFoundException("AI conversation not found"));
                 User currentUser = workspaceAccessService.getCurrentUser();
@@ -125,7 +137,8 @@ public class AiService {
                 return conversation;
         }
 
-        private String generateAiResponse(List<AiMessage> history) {
+        @NonNull
+        private String generateAiResponse(@NonNull List<AiMessage> history) {
                 if (geminiApiKey == null || geminiApiKey.isBlank()) {
                         throw new IllegalStateException("Gemini API key is not configured");
                 }
@@ -156,11 +169,13 @@ public class AiService {
                 }
         }
 
-        private GeminiContent toGeminiContent(AiMessage message) {
+        @NonNull
+        private GeminiContent toGeminiContent(@NonNull AiMessage message) {
                 String role = message.getRole() == AiMessage.Role.AI ? "model" : "user";
                 return new GeminiContent(role, List.of(new GeminiPart(message.getContent())));
         }
 
+        @NonNull
         private String extractText(GeminiGenerateContentResponse response) {
                 if (response == null || response.candidates() == null || response.candidates().isEmpty()) {
                         throw new IllegalStateException("Gemini returned no response");
@@ -180,7 +195,8 @@ public class AiService {
                         .orElseThrow(() -> new IllegalStateException("Gemini returned an empty response"));
         }
 
-        private AiConversationResponse toResponse(AiConversation conversation) {
+        @NonNull
+        private AiConversationResponse toResponse(@NonNull AiConversation conversation) {
                 return new AiConversationResponse(
                         conversation.getId(),
                         conversation.getWorkspaceId(),
@@ -190,7 +206,8 @@ public class AiService {
                 );
         }
 
-        private AiMessageResponse toMessageResponse(AiMessage message) {
+        @NonNull
+        private AiMessageResponse toMessageResponse(@NonNull AiMessage message) {
                 return new AiMessageResponse(
                         message.getId(),
                         message.getConversationId(),

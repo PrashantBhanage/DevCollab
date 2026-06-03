@@ -164,6 +164,12 @@ public class AiService {
                         return extractText(response);
                 }
                 catch (RestClientResponseException exception) {
+                        if (exception.getStatusCode().value() == 429) {
+                                throw new org.springframework.web.server.ResponseStatusException(
+                                        org.springframework.http.HttpStatus.TOO_MANY_REQUESTS,
+                                        "AI daily quota exceeded. Please try again later."
+                                );
+                        }
                         String body = exception.getResponseBodyAsString();
                         throw new IllegalStateException("Gemini request failed: " + (body == null || body.isBlank() ? exception.getMessage() : body), exception);
                 }

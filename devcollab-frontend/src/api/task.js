@@ -10,8 +10,8 @@ export const createTask = async (workspaceId, title, description) => {
   return response.data;
 };
 
-export const updateTask = async (taskId, status) => {
-  const response = await axiosInstance.put(`/api/tasks/${taskId}`, { status });
+export const updateTask = async (taskId, task) => {
+  const response = await axiosInstance.put(`/api/tasks/${taskId}`, task);
   return response.data;
 };
 

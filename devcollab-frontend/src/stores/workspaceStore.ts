@@ -245,7 +245,23 @@ const useWorkspaceStore = (create as any)((set: any, get: any) => ({
 
   updateTaskStatus: async (taskId, status) => {
     try {
-      const updated = await taskApi.updateTask(taskId, status);
+      if (taskId === undefined || taskId === null) {
+        throw new Error('Missing task id');
+      }
+
+      const currentTask = get().tasks.find((task) => task.id === taskId);
+      if (!currentTask) {
+        throw new Error('Task not found');
+      }
+
+      const updated = await taskApi.updateTask(taskId, {
+        title: currentTask.title,
+        description: currentTask.description,
+        status,
+        dueDate: currentTask.dueDate,
+        assignedTo: currentTask.assignedTo,
+        workspaceId: currentTask.workspaceId,
+      });
       set((state: any) => ({
         tasks: state.tasks.map((t: any) => t.id === taskId ? updated : t)
       }));

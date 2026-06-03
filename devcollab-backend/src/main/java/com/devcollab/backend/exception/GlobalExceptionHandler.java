@@ -51,6 +51,11 @@ public class GlobalExceptionHandler {
 		return buildResponse(HttpStatus.FORBIDDEN, exception.getMessage(), null);
 	}
 
+	@ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+	public ResponseEntity<Map<String, Object>> handleResponseStatus(org.springframework.web.server.ResponseStatusException exception) {
+		return buildResponse(HttpStatus.valueOf(exception.getStatusCode().value()), exception.getReason(), null);
+	}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<Map<String, Object>> handleOtherErrors(Exception exception) {
 		return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage(), null);
